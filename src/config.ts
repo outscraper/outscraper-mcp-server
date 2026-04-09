@@ -32,7 +32,7 @@ export function getConfig(): AppConfig {
     apiBaseUrl:
       process.env.OUTSCRAPER_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL,
     serverName: "outscraper-mcp",
-    serverVersion: "0.1.0",
+    serverVersion: "0.1.2",
     cloudService,
     transport,
     httpMode:
