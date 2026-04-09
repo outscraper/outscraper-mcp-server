@@ -14,8 +14,8 @@ pnpm-debug.log*
 .tmp-*/
 
 *.tgz
+*.wiki/
+outscraper-mcp-server.wiki/
 
 .DS_Store
 Thumbs.db
-
-outscraper-api-docs.json
