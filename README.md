@@ -425,8 +425,6 @@ Natural-language `query` support on `/businesses` currently depends on Outscrape
 
 ## Notes
 
-- The public `docs.outscraper.com` page is bot-protected, so the bundled OpenAPI file and live endpoint validation were used as the primary implementation reference.
-- The bundled [`outscraper-api-docs.json`](/D:/Work/AI/outscraper-mcp/outscraper-api-docs.json) is now the primary local reference for endpoint behavior and confirmed that the current base URL is `https://api.outscraper.cloud`.
 - The server supports stdio, stateless Streamable HTTP, and stateful local HTTP/SSE mode.
 - `CLOUD_SERVICE=true` enables header-based API key resolution for HTTP requests.
 - For npm publication, package contents are intentionally limited to runtime artifacts and docs.
