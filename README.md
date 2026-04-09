@@ -4,18 +4,19 @@ Official MCP server for [Outscraper](https://outscraper.com/).
 
 It exposes production-ready MCP tools for:
 
-- business discovery
-- Google Maps place and review data
-- company insights
-- emails and contacts
-- account balance checks
-- async request lifecycle management
+- business discovery and enrichment
+- Google Maps places, reviews, photos, and chain detection
+- company insights, emails, email validation, and phone enrichment
+- Google Search and Google Images search
+- Yellow Pages, Booking, Yelp, Tripadvisor, Trustpilot, and Indeed data
+- account balance checks and async request lifecycle management
 
 The server supports stdio and HTTP transports, npm-based installation, hosted header auth, and a normalized `structuredContent` result shape for MCP clients and agents.
 
 ## Quick Start
 
 ```bash
+set OUTSCRAPER_API_KEY=YOUR_API_KEY
 npx -y outscraper-mcp
 ```
 
@@ -33,19 +34,47 @@ For MCP clients, configure:
 - `google_maps_reviews`
 - `company_insights`
 - `emails_and_contacts`
+- `emails_validator`
+- `google_maps_photos`
+- `chain_info`
+- `yellowpages_search`
+- `booking_reviews`
+- `phones_enricher`
+- `tp_data`
+- `tp_reviews`
+- `yelp_reviews`
+- `tripadvisor_search`
+- `tripadvisor_reviews`
+- `google_search`
+- `google_search_images`
+- `indeed_search`
 - `balance_get`
 - `requests_get`
 - `requests_list`
 - `requests_delete`
 
-These tools are aligned to the current `outscraper-api-docs.json` OpenAPI shapes, including:
+These tools are aligned to the current documented Outscraper API shapes, including:
 
 - `POST /businesses`
 - `GET /businesses/{business_id}`
 - `GET /google-maps-search`
+- `GET /google-maps-photos`
+- `GET /google-search`
+- `GET /google-search-images`
+- `GET /yellowpages-search`
+- `GET /booking-reviews`
+- `GET /phones-enricher`
+- `GET /trustpilot`
+- `GET /trustpilot-reviews`
+- `GET /yelp-reviews`
+- `GET /tripadvisor-search`
+- `GET /tripadvisor-reviews`
+- `GET /indeed-search`
 - `GET /google-maps-reviews`
 - `GET /company-insights`
 - `GET /emails-and-contacts`
+- `GET /email-validator`
+- documented `ai_chain_info` enrichment via `google-maps-search`
 - `GET /profile/balance`
 - `GET /requests/{requestId}`
 - `DELETE /requests/{requestId}`
@@ -390,6 +419,75 @@ Natural-language `query` support on `/businesses` currently depends on Outscrape
 }
 ```
 
+### Validate email addresses
+
+```json
+{
+  "query": ["support@outscraper.com"],
+  "execution_mode": "sync"
+}
+```
+
+### Fetch Google Maps photos
+
+```json
+{
+  "query": ["NoMad Restaurant, NY, USA"],
+  "photos_limit": 5,
+  "limit": 1,
+  "execution_mode": "sync"
+}
+```
+
+### Get chain info
+
+```json
+{
+  "query": ["Starbucks, New York, NY, USA"],
+  "limit": 1,
+  "execution_mode": "sync"
+}
+```
+
+### Get Trustpilot business data
+
+```json
+{
+  "query": ["outscraper.com"],
+  "execution_mode": "sync"
+}
+```
+
+### Search Google
+
+```json
+{
+  "query": ["outscraper"],
+  "pages_per_query": 1,
+  "execution_mode": "sync"
+}
+```
+
+### Search Google Images
+
+```json
+{
+  "query": ["outscraper"],
+  "limit": 5,
+  "execution_mode": "sync"
+}
+```
+
+### Search Indeed
+
+```json
+{
+  "query": ["https://www.indeed.com/jobs?q=software+engineer&l=New+York%2C+NY"],
+  "limit": 10,
+  "execution_mode": "sync"
+}
+```
+
 ### Check account balance
 
 ```json
@@ -411,6 +509,8 @@ Natural-language `query` support on `/businesses` currently depends on Outscrape
 - `businesses_search` is intentionally exposed here as a synchronous MCP tool because the current `/businesses` OpenAPI shape is request-body-based and did not prove to be a stable async-style workflow during live validation.
 - `execution_mode="auto"` is heuristic-driven. It is designed to choose a practical default, but callers that need deterministic behavior should explicitly use `sync` or `async`.
 - HTTP hosted mode requires correct auth headers when `CLOUD_SERVICE=true`; stdio mode still expects `OUTSCRAPER_API_KEY` in the process environment.
+- `chain_info` is implemented from the documented `ai_chain_info` enrichment on `google-maps-search`, because Outscraper currently does not describe a standalone `chain info` endpoint.
+- `builtwith` is not currently exposed as a tool because Outscraper currently does not document a dedicated BuiltWith endpoint.
 
 ## Tool Selection Notes
 

@@ -6,9 +6,14 @@ import { extractApiKeyFromRequest } from "./outscraper/auth.js";
 import { BusinessesModule } from "./services/businesses/service.js";
 import { CompanyInsightsModule } from "./services/company-insights/service.js";
 import { EmailsAndContactsModule } from "./services/emails-and-contacts/service.js";
+import { EnrichmentsModule } from "./services/enrichments/service.js";
 import { GoogleMapsModule } from "./services/google-maps/service.js";
+import { MediaModule } from "./services/media/service.js";
 import { ProfileModule } from "./services/profile/service.js";
 import { RequestsModule } from "./services/requests/service.js";
+import { ReviewsModule } from "./services/reviews/service.js";
+import { SearchModule } from "./services/search/service.js";
+import { ValidatorsModule } from "./services/validators/service.js";
 
 export function createServer(config: AppConfig): McpServer {
   const server = new McpServer({
@@ -38,6 +43,11 @@ export function createServer(config: AppConfig): McpServer {
     [
       new BusinessesModule(),
       new GoogleMapsModule(),
+      new MediaModule(),
+      new SearchModule(),
+      new ReviewsModule(),
+      new ValidatorsModule(),
+      new EnrichmentsModule(),
       new CompanyInsightsModule(),
       new EmailsAndContactsModule(),
       new ProfileModule(),

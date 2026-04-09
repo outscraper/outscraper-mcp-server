@@ -3,10 +3,23 @@ import type {
   AsyncResponse,
   BusinessesGetParams,
   BusinessesSearchPayload,
+  BookingReviewsParams,
   CompanyInsightsParams,
+  EmailValidatorParams,
   EmailsAndContactsParams,
+  GoogleMapsPhotosParams,
   GoogleMapsReviewsParams,
   GoogleMapsSearchParams,
+  GoogleSearchImagesParams,
+  GoogleSearchParams,
+  IndeedSearchParams,
+  PhonesEnricherParams,
+  TripadvisorReviewsParams,
+  TripadvisorSearchParams,
+  TrustpilotDataParams,
+  TrustpilotReviewsParams,
+  YellowpagesSearchParams,
+  YelpReviewsParams,
 } from "./types.js";
 
 export class OutscraperApiError extends Error {
@@ -67,6 +80,58 @@ export class OutscraperClient {
 
   async emailsAndContacts(params: EmailsAndContactsParams): Promise<unknown> {
     return this.get("/emails-and-contacts", params);
+  }
+
+  async emailValidator(params: EmailValidatorParams): Promise<unknown> {
+    return this.get("/email-validator", params);
+  }
+
+  async googleMapsPhotos(params: GoogleMapsPhotosParams): Promise<unknown> {
+    return this.get("/google-maps-photos", params);
+  }
+
+  async yellowpagesSearch(params: YellowpagesSearchParams): Promise<unknown> {
+    return this.get("/yellowpages-search", params);
+  }
+
+  async bookingReviews(params: BookingReviewsParams): Promise<unknown> {
+    return this.get("/booking-reviews", params);
+  }
+
+  async phonesEnricher(params: PhonesEnricherParams): Promise<unknown> {
+    return this.get("/phones-enricher", params);
+  }
+
+  async yelpReviews(params: YelpReviewsParams): Promise<unknown> {
+    return this.get("/yelp-reviews", params);
+  }
+
+  async tripadvisorReviews(params: TripadvisorReviewsParams): Promise<unknown> {
+    return this.get("/tripadvisor-reviews", params);
+  }
+
+  async tripadvisorSearch(params: TripadvisorSearchParams): Promise<unknown> {
+    return this.get("/tripadvisor-search", params);
+  }
+
+  async googleSearch(params: GoogleSearchParams): Promise<unknown> {
+    return this.get("/google-search", params);
+  }
+
+  async googleSearchImages(params: GoogleSearchImagesParams): Promise<unknown> {
+    return this.get("/google-search-images", params);
+  }
+
+  async indeedSearch(params: IndeedSearchParams): Promise<unknown> {
+    return this.get("/indeed-search", params);
+  }
+
+  async trustpilotData(params: TrustpilotDataParams): Promise<unknown> {
+    return this.get("/trustpilot", params);
+  }
+
+  async trustpilotReviews(params: TrustpilotReviewsParams): Promise<unknown> {
+    return this.get("/trustpilot-reviews", params);
   }
 
   private async get(path: string, params?: object): Promise<any> {
