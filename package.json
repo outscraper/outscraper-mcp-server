@@ -1,0 +1,58 @@
+{
+  "name": "outscraper-mcp",
+  "version": "0.1.0",
+  "mcpName": "io.github.outscraper/outscraper-mcp-server",
+  "description": "MCP server for Outscraper with stdio and HTTP transports, modular tools, and async request support.",
+  "type": "module",
+  "bin": {
+    "outscraper-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "server.json",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "outscraper",
+    "model-context-protocol",
+    "node",
+    "typescript",
+    "google-maps",
+    "lead-generation",
+    "business-data"
+  ],
+  "homepage": "https://github.com/outscraper/outscraper-mcp-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/outscraper/outscraper-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/outscraper/outscraper-mcp-server/issues"
+  },
+  "author": "nikolaout (https://github.com/nikolaout)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.2.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.3.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.outscraper/outscraper-mcp-server",
+  "title": "Outscraper MCP Server",
+  "description": "Official Outscraper MCP server for businesses, Google Maps, company insights, contacts, balance, and async request lifecycle tools.",
+  "repository": {
+    "url": "https://github.com/outscraper/outscraper-mcp-server",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "outscraper-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OUTSCRAPER_API_KEY",
+          "description": "Your Outscraper API key",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "CLOUD_SERVICE",
+          "description": "Set to true to require the API key from Authorization or X-API-KEY headers in HTTP mode",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "HTTP_STREAMABLE_SERVER",
+          "description": "Set to true to run the server over stateless Streamable HTTP instead of stdio",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "SSE_LOCAL",
+          "description": "Set to true to run a local stateful HTTP/SSE mode with session management",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "HTTP_STATEFUL_SERVER",
+          "description": "Alternative flag for enabling stateful HTTP session mode",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "HOST",
+          "description": "HTTP bind host used when HTTP_STREAMABLE_SERVER=true",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "PORT",
+          "description": "HTTP bind port used when HTTP_STREAMABLE_SERVER=true",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
