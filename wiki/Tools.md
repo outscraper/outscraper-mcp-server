@@ -122,7 +122,7 @@ All tools return a normalized result envelope:
   "async": {
     "id": "request-id",
     "status": "Pending",
-    "results_location": "https://api.outscraper.cloud/requests/request-id",
+    "results_location": "https://api.outscraper.com/requests/request-id",
     "is_async_submission": true,
     "next_step": "Call requests_get with request_id=\"request-id\" to check progress."
   }

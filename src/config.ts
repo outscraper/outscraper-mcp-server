@@ -10,7 +10,7 @@ export interface AppConfig {
   httpPort: number;
 }
 
-const DEFAULT_API_BASE_URL = "https://api.outscraper.cloud";
+const DEFAULT_API_BASE_URL = "https://api.outscraper.com";
 
 export function getConfig(): AppConfig {
   const apiKey = process.env.OUTSCRAPER_API_KEY?.trim();
