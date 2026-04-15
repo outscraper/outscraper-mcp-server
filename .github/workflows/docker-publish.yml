@@ -1,11 +1,8 @@
 name: Build and Push Docker Image
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -32,12 +29,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/myapp
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/outscraper-mcp
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=ref,event=tag
-            type=sha
+            type=raw,value=latest
+            type=raw,value=${{ github.event.release.tag_name }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
