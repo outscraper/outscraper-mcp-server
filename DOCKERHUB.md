@@ -73,7 +73,7 @@ Default behavior:
 - `SSE_LOCAL=false`
 - `HOST=0.0.0.0`
 - `PORT=3000`
-- `OUTSCRAPER_API_BASE_URL=https://api.outscraper.cloud`
+- `OUTSCRAPER_API_BASE_URL=https://api.outscraper.com`
 
 ## ChatGPT Connector Style URL
 
