@@ -7,6 +7,13 @@ export interface AsyncResponse {
   [key: string]: unknown;
 }
 
+export interface AiScraperPayload {
+  query: string;
+  prompt?: string;
+  schema?: Record<string, unknown>;
+  async?: boolean;
+}
+
 export interface BusinessesSearchPayload {
   filters?: Record<string, unknown>;
   limit?: number;

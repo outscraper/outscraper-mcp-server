@@ -15,9 +15,12 @@ const DEFAULT_API_BASE_URL = "https://api.outscraper.cloud";
 export function getConfig(): AppConfig {
   const apiKey = process.env.OUTSCRAPER_API_KEY?.trim();
   const cloudService = process.env.CLOUD_SERVICE === "true";
+  const statefulHttpEnabled =
+    process.env.SSE_LOCAL === "true" ||
+    process.env.HTTP_STATEFUL_SERVER === "true";
+  const streamableHttpEnabled = process.env.HTTP_STREAMABLE_SERVER === "true";
   const transport =
-    process.env.HTTP_STREAMABLE_SERVER === "true" ||
-    process.env.SSE_LOCAL === "true"
+    streamableHttpEnabled || statefulHttpEnabled
       ? "http"
       : "stdio";
 
@@ -32,14 +35,10 @@ export function getConfig(): AppConfig {
     apiBaseUrl:
       process.env.OUTSCRAPER_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL,
     serverName: "outscraper-mcp",
-    serverVersion: "0.1.2",
+    serverVersion: "0.2.0",
     cloudService,
     transport,
-    httpMode:
-      process.env.SSE_LOCAL === "true" ||
-      process.env.HTTP_STATEFUL_SERVER === "true"
-        ? "stateful"
-        : "stateless",
+    httpMode: statefulHttpEnabled ? "stateful" : "stateless",
     httpHost: process.env.HOST?.trim() || "localhost",
     httpPort: Number(process.env.PORT || 3000),
   };

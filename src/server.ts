@@ -3,6 +3,7 @@ import { registerModules } from "./core/service.js";
 import type { AppConfig } from "./config.js";
 import { OutscraperClient } from "./outscraper/client.js";
 import { extractApiKeyFromRequest } from "./outscraper/auth.js";
+import { AiScraperModule } from "./services/ai-scraper/service.js";
 import { BusinessesModule } from "./services/businesses/service.js";
 import { CompanyInsightsModule } from "./services/company-insights/service.js";
 import { EmailsAndContactsModule } from "./services/emails-and-contacts/service.js";
@@ -41,6 +42,7 @@ export function createServer(config: AppConfig): McpServer {
       },
     },
     [
+      new AiScraperModule(),
       new BusinessesModule(),
       new GoogleMapsModule(),
       new MediaModule(),

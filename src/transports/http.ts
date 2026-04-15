@@ -6,7 +6,11 @@ import type { Express, Request, Response } from "express";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import type { AppConfig } from "../config.js";
+import { extractApiKeyFromHeaders, extractApiKeyFromUrl } from "../outscraper/auth.js";
 import { createServer } from "../server.js";
+
+const STATELESS_MCP_PATHS = ["/mcp", "/v1/mcp/:apiKey"];
+const STATEFUL_MCP_PATHS = ["/mcp", "/v1/mcp/:apiKey"];
 
 export async function startHttpServer(config: AppConfig): Promise<HttpServer> {
   const app = createApp(config);
@@ -43,7 +47,11 @@ function createApp(config: AppConfig): Express {
 }
 
 function configureStatelessRoutes(app: Express, config: AppConfig): void {
-  app.post("/mcp", async (req: Request, res: Response) => {
+  app.post(STATELESS_MCP_PATHS, async (req: Request, res: Response) => {
+    if (!authenticateRequest(config, req, res)) {
+      return;
+    }
+
     const server = createServer(config);
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
@@ -73,7 +81,7 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.get("/mcp", (_req: Request, res: Response) => {
+  app.get(STATELESS_MCP_PATHS, (_req: Request, res: Response) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: {
@@ -84,7 +92,7 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
     });
   });
 
-  app.delete("/mcp", (_req: Request, res: Response) => {
+  app.delete(STATELESS_MCP_PATHS, (_req: Request, res: Response) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: {
@@ -99,7 +107,11 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
 function configureStatefulRoutes(app: Express, config: AppConfig): void {
   const sessions = new Map<string, StatefulSession>();
 
-  app.post("/mcp", async (req: Request, res: Response) => {
+  app.post(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+    if (!authenticateRequest(config, req, res)) {
+      return;
+    }
+
     const sessionId = getSessionId(req);
 
     try {
@@ -144,7 +156,11 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.get("/mcp", async (req: Request, res: Response) => {
+  app.get(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+    if (!authenticateRequest(config, req, res)) {
+      return;
+    }
+
     const sessionId = getSessionId(req);
 
     if (!sessionId || !sessions.has(sessionId)) {
@@ -163,7 +179,11 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.delete("/mcp", async (req: Request, res: Response) => {
+  app.delete(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+    if (!authenticateRequest(config, req, res)) {
+      return;
+    }
+
     const sessionId = getSessionId(req);
 
     if (!sessionId || !sessions.has(sessionId)) {
@@ -186,6 +206,41 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
 interface StatefulSession {
   server: McpServer;
   transport: StreamableHTTPServerTransport;
+}
+
+function authenticateRequest(
+  config: AppConfig,
+  req: Request,
+  res: Response,
+): boolean {
+  if (!config.cloudService) {
+    return true;
+  }
+
+  const apiKey = extractApiKeyFromHeaders(req.headers) ?? extractApiKeyFromExpressPath(req);
+  if (apiKey) {
+    return true;
+  }
+
+  sendJsonRpcError(
+    res,
+    401,
+    "Unauthorized: Outscraper API key is required in X-OUTSCRAPER-API-KEY, X-API-KEY, Authorization: Bearer <api-key>, or /v1/mcp/<api-key>.",
+  );
+  return false;
+}
+
+function extractApiKeyFromExpressPath(req: Request): string | undefined {
+  const apiKeyParam = req.params.apiKey;
+  if (typeof apiKeyParam === "string" && apiKeyParam.trim().length > 0) {
+    return apiKeyParam.trim();
+  }
+
+  const protocol = req.protocol || "http";
+  const host = req.get("host") || "localhost";
+  const resolvedUrl = new URL(req.originalUrl || req.url, `${protocol}://${host}`);
+
+  return extractApiKeyFromUrl(resolvedUrl);
 }
 
 function getSessionId(req: Request): string | undefined {

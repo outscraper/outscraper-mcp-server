@@ -1,0 +1,21 @@
+services:
+  outscraper-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: outscraper-mcp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      CLOUD_SERVICE: "true"
+      HTTP_STREAMABLE_SERVER: "true"
+      HTTP_STATEFUL_SERVER: "false"
+      SSE_LOCAL: "false"
+      HOST: "0.0.0.0"
+      PORT: "3000"
+      OUTSCRAPER_API_BASE_URL: "https://api.outscraper.cloud"
+
+    # Hosted endpoint examples:
+    # Header auth: http://localhost:3000/mcp
+    # URL auth: http://localhost:3000/v1/mcp/YOUR_OUTSCRAPER_API_KEY

@@ -1,5 +1,6 @@
 import { removeEmpty } from "../lib/json.js";
 import type {
+  AiScraperPayload,
   AsyncResponse,
   BusinessesGetParams,
   BusinessesSearchPayload,
@@ -38,6 +39,10 @@ export class OutscraperClient {
     private readonly apiKey: string,
     private readonly apiBaseUrl: string,
   ) {}
+
+  async aiScraper(payload: AiScraperPayload): Promise<unknown> {
+    return this.post("/ai-scraper", payload);
+  }
 
   async businessesSearch(payload: BusinessesSearchPayload): Promise<unknown> {
     return this.post("/businesses", payload);

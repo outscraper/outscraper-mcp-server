@@ -36,6 +36,8 @@ Then provide the API key via one of these headers:
 - `X-API-KEY: <api-key>`
 - `X-OUTSCRAPER-API-KEY: <api-key>`
 
+Requests without one of these auth forms are rejected before MCP processing begins.
+
 ## Notes
 
 - In local stdio mode, environment-based auth is expected.

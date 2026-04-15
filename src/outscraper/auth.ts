@@ -1,10 +1,15 @@
 export function extractApiKeyFromRequest(extra?: unknown): string | undefined {
-  const headers = getHeaders(extra);
+  const requestInfo = getRequestInfo(extra);
 
-  const directHeader = headers["x-outscraper-api-key"]
-    ?? headers["x-api-key"]
-    ?? headers["authorization"];
+  return (
+    extractApiKeyFromHeaders(requestInfo.headers)
+    ?? extractApiKeyFromUrl(requestInfo.url)
+  );
+}
 
+export function extractApiKeyFromHeaders(
+  headers: Record<string, string | string[] | undefined>,
+): string | undefined {
   const xApiKey = headers["x-outscraper-api-key"] ?? headers["x-api-key"];
   if (typeof xApiKey === "string" && xApiKey.trim().length > 0) {
     return xApiKey.trim();
@@ -26,14 +31,33 @@ export function extractApiKeyFromRequest(extra?: unknown): string | undefined {
     }
   }
 
-  if (typeof directHeader === "string" && directHeader.trim().length > 0) {
-    return directHeader.trim();
-  }
-
   return undefined;
 }
 
-function getHeaders(extra?: unknown): Record<string, string | string[] | undefined> {
+export function extractApiKeyFromUrl(url?: URL): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+
+  const match = /^\/v1\/mcp\/([^/]+)\/?$/.exec(url.pathname);
+  if (!match) {
+    return undefined;
+  }
+
+  try {
+    const apiKey = decodeURIComponent(match[1]);
+    return apiKey.trim().length > 0 ? apiKey.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+interface RequestInfoLike {
+  headers: Record<string, string | string[] | undefined>;
+  url?: URL;
+}
+
+function getRequestInfo(extra?: unknown): RequestInfoLike {
   if (
     extra &&
     typeof extra === "object" &&
@@ -44,8 +68,16 @@ function getHeaders(extra?: unknown): Record<string, string | string[] | undefin
     extra.requestInfo.headers &&
     typeof extra.requestInfo.headers === "object"
   ) {
-    return extra.requestInfo.headers as Record<string, string | string[] | undefined>;
+    const requestInfo = extra.requestInfo as {
+      headers: Record<string, string | string[] | undefined>;
+      url?: URL;
+    };
+
+    return {
+      headers: requestInfo.headers,
+      url: requestInfo.url instanceof URL ? requestInfo.url : undefined,
+    };
   }
 
-  return {};
+  return { headers: {} };
 }

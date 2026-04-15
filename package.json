@@ -1,6 +1,6 @@
 {
   "name": "outscraper-mcp",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "mcpName": "io.github.outscraper/outscraper-mcp-server",
   "description": "MCP server for Outscraper with stdio and HTTP transports, modular tools, and async request support.",
   "type": "module",
