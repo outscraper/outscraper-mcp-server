@@ -35,7 +35,7 @@ export function getConfig(): AppConfig {
     apiBaseUrl:
       process.env.OUTSCRAPER_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL,
     serverName: "outscraper-mcp",
-    serverVersion: "0.2.0",
+    serverVersion: "0.2.1",
     cloudService,
     transport,
     httpMode: statefulHttpEnabled ? "stateful" : "stateless",
