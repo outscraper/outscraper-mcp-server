@@ -116,7 +116,11 @@ export class OutscraperClient {
   }
 
   async tripadvisorSearch(params: TripadvisorSearchParams): Promise<unknown> {
-    return this.get("/tripadvisor-search", params);
+    const { searchType, ...rest } = params;
+    return this.get("/tripadvisor-search", {
+      ...rest,
+      ...(searchType !== undefined ? { SearchType: searchType } : {}),
+    });
   }
 
   async googleSearch(params: GoogleSearchParams): Promise<unknown> {
@@ -175,28 +179,38 @@ export class OutscraperClient {
     return this.request(url, { method: "DELETE" });
   }
 
+  private static readonly REQUEST_TIMEOUT_MS = 120_000;
+
   private async request(url: URL, init: RequestInit): Promise<any> {
-    const response = await fetch(url, {
-      ...init,
-      headers: {
-        "x-api-key": this.apiKey,
-        client: "outscraper-mcp",
-        ...(init.headers ?? {}),
-      },
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), OutscraperClient.REQUEST_TIMEOUT_MS);
 
-    const text = await response.text();
-    const payload = text ? safeJsonParse(text) : null;
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: controller.signal,
+        headers: {
+          "x-api-key": this.apiKey,
+          client: "outscraper-mcp",
+          ...(init.headers ?? {}),
+        },
+      });
 
-    if (!response.ok) {
-      const message =
-        getErrorMessage(payload) ||
-        `Outscraper API request failed with status ${response.status}`;
+      const text = await response.text();
+      const payload = text ? safeJsonParse(text) : null;
 
-      throw new OutscraperApiError(message, response.status, payload);
+      if (!response.ok) {
+        const message =
+          getErrorMessage(payload) ||
+          `Outscraper API request failed with status ${response.status}`;
+
+        throw new OutscraperApiError(message, response.status, payload);
+      }
+
+      return payload;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return payload;
   }
 }
 

@@ -65,10 +65,6 @@ Note:
         outputSchema: toolResultEnvelopeSchema,
       },
       async (args, extra) => {
-        if (process.env.DEBUG_BUSINESSES_TOOL === "true") {
-          console.error("[businesses_search args]", JSON.stringify(args));
-        }
-
         const response = await context.getClient(extra).businessesSearch({
           filters: args.filters,
           query: args.query,
@@ -106,10 +102,6 @@ Do not use this for discovery:
         outputSchema: toolResultEnvelopeSchema,
       },
       async (args, extra) => {
-        if (process.env.DEBUG_BUSINESSES_TOOL === "true") {
-          console.error("[businesses_get args]", JSON.stringify(args));
-        }
-
         const response = await context.getClient(extra).businessesGet(args.business_id, {
           fields: args.fields?.join(","),
         });

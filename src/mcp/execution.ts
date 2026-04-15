@@ -25,12 +25,12 @@ export function resolveAsyncFlag(
     return true;
   }
 
-  if (typeof options.async === "boolean") {
-    return options.async;
-  }
-
   if (options.executionMode === "auto") {
     return Boolean(options.shouldUseAsyncInAuto);
+  }
+
+  if (typeof options.async === "boolean") {
+    return options.async;
   }
 
   if (options.defaultMode) {

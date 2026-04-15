@@ -221,7 +221,7 @@ export class SearchModule implements ToolModule {
 
         const response = await context.getClient(extra).tripadvisorSearch({
           query: args.query,
-          SearchType: args.search_type,
+          searchType: args.search_type,
           limit: args.limit,
           skip: args.skip,
           fields: args.fields?.join(","),

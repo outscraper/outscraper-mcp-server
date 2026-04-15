@@ -9,24 +9,21 @@ import type { AppConfig } from "../config.js";
 import { extractApiKeyFromHeaders, extractApiKeyFromUrl } from "../outscraper/auth.js";
 import { createServer } from "../server.js";
 
-const STATELESS_MCP_PATHS = ["/mcp", "/v1/mcp/:apiKey"];
-const STATEFUL_MCP_PATHS = ["/mcp", "/v1/mcp/:apiKey"];
+const MCP_PATHS = ["/mcp", "/v1/mcp/:apiKey"];
+
+const MAX_STATEFUL_SESSIONS = 100;
 
 export async function startHttpServer(config: AppConfig): Promise<HttpServer> {
   const app = createApp(config);
 
   return new Promise((resolve, reject) => {
-    const httpServer = app.listen(config.httpPort, config.httpHost, (error?: Error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
+    const httpServer = app.listen(config.httpPort, config.httpHost, () => {
       console.error(
         `${config.serverName} running on ${config.httpMode} Streamable HTTP at http://${config.httpHost}:${config.httpPort}/mcp`,
       );
       resolve(httpServer);
     });
+    httpServer.on("error", reject);
   });
 }
 
@@ -47,7 +44,7 @@ function createApp(config: AppConfig): Express {
 }
 
 function configureStatelessRoutes(app: Express, config: AppConfig): void {
-  app.post(STATELESS_MCP_PATHS, async (req: Request, res: Response) => {
+  app.post(MCP_PATHS, async (req: Request, res: Response) => {
     if (!authenticateRequest(config, req, res)) {
       return;
     }
@@ -81,7 +78,7 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.get(STATELESS_MCP_PATHS, (_req: Request, res: Response) => {
+  app.get(MCP_PATHS, (_req: Request, res: Response) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: {
@@ -92,7 +89,7 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
     });
   });
 
-  app.delete(STATELESS_MCP_PATHS, (_req: Request, res: Response) => {
+  app.delete(MCP_PATHS, (_req: Request, res: Response) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: {
@@ -107,7 +104,7 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
 function configureStatefulRoutes(app: Express, config: AppConfig): void {
   const sessions = new Map<string, StatefulSession>();
 
-  app.post(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+  app.post(MCP_PATHS, async (req: Request, res: Response) => {
     if (!authenticateRequest(config, req, res)) {
       return;
     }
@@ -122,6 +119,11 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
       }
 
       if (!sessionId && isInitializeRequest(req.body)) {
+        if (sessions.size >= MAX_STATEFUL_SESSIONS) {
+          sendJsonRpcError(res, 503, "Service unavailable: too many active sessions");
+          return;
+        }
+
         const server = createServer(config);
         let transport!: StreamableHTTPServerTransport;
 
@@ -156,7 +158,7 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.get(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+  app.get(MCP_PATHS, async (req: Request, res: Response) => {
     if (!authenticateRequest(config, req, res)) {
       return;
     }
@@ -179,7 +181,7 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
     }
   });
 
-  app.delete(STATEFUL_MCP_PATHS, async (req: Request, res: Response) => {
+  app.delete(MCP_PATHS, async (req: Request, res: Response) => {
     if (!authenticateRequest(config, req, res)) {
       return;
     }

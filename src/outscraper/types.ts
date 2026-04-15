@@ -144,7 +144,7 @@ export interface TripadvisorReviewsParams {
 
 export interface TripadvisorSearchParams {
   query: string[];
-  SearchType?: string;
+  searchType?: string;
   limit?: number;
   skip?: number;
   fields?: string;

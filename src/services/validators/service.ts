@@ -71,6 +71,8 @@ Best for:
 - carrier lookup
 - phone validation
 - message deliverability checks
+
+Note: this endpoint is synchronous only and does not support async execution or webhooks.
         `.trim(),
         inputSchema: phonesEnricherInput,
         outputSchema: toolResultEnvelopeSchema,

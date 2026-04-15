@@ -13,7 +13,7 @@ FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-ARG VERSION=0.2.1
+ARG VERSION=0.2.2
 ARG VCS_REF=unknown
 ARG REPO_URL=https://github.com/outscraper/outscraper-mcp-server
 

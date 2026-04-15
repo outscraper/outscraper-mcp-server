@@ -166,7 +166,7 @@ export class ReviewsModule implements ToolModule {
     );
 
     server.registerTool(
-      "tp_data",
+      "trustpilot_data",
       {
         title: "Trustpilot Data",
         description: "Fetch Trustpilot business data with the documented /trustpilot endpoint.",
@@ -198,7 +198,7 @@ export class ReviewsModule implements ToolModule {
     );
 
     server.registerTool(
-      "tp_reviews",
+      "trustpilot_reviews",
       {
         title: "Trustpilot Reviews",
         description: "Fetch Trustpilot reviews with the documented /trustpilot-reviews endpoint.",
