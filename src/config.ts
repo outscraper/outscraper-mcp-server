@@ -29,12 +29,6 @@ export function getConfig(): AppConfig {
       ? "http"
       : "stdio";
 
-  if (!apiKey && (!cloudService || transport === "stdio")) {
-    throw new Error(
-      "Missing OUTSCRAPER_API_KEY. Create an API key in Outscraper and export it before starting the MCP server.",
-    );
-  }
-
   const rawPort = Number(process.env.PORT ?? 3000);
   const httpPort = Number.isNaN(rawPort) ? 3000 : rawPort;
 

@@ -2,6 +2,31 @@
 
 Official MCP server for [Outscraper](https://outscraper.com/).
 
+Connect AI agents to Outscraper for business discovery, Google Maps intelligence, company and contact enrichment, review analysis, search, and structured web extraction.
+
+## Best For
+
+- local business prospecting and lead generation
+- Google Maps place, photo, and review intelligence
+- company and contact enrichment from known domains
+- async data collection workflows with polling
+- extracting structured information from a single page
+
+## Not Ideal For
+
+- browser automation or multi-step UI interaction
+- generic OAuth-based SaaS integrations
+- arbitrary document search outside the Outscraper data surface
+- website crawling sessions that require a persistent browser
+
+## Common Workflows
+
+- find businesses with `businesses_search`, then enrich a chosen record with `businesses_get`
+- search Google Maps places, then fetch reviews or photos for reputation analysis
+- enrich a company domain, validate emails, and check contact coverage
+- submit async jobs, then poll them with `requests_get`
+- extract structured data from a page with `ai_scraper`
+
 It exposes production-ready MCP tools for:
 
 - business discovery and enrichment
@@ -49,6 +74,7 @@ For task-oriented workflows, copy-paste examples, and example agent skills, see 
 
 ## Current Tools
 
+- `ping`
 - `businesses_search`
 - `businesses_get`
 - `ai_scraper`
@@ -62,8 +88,10 @@ For task-oriented workflows, copy-paste examples, and example agent skills, see 
 - `yellowpages_search`
 - `booking_reviews`
 - `phones_enricher`
-- `tp_data`
-- `tp_reviews`
+- `tp_data` (legacy alias for `trustpilot_data`)
+- `trustpilot_data`
+- `tp_reviews` (legacy alias for `trustpilot_reviews`)
+- `trustpilot_reviews`
 - `yelp_reviews`
 - `tripadvisor_search`
 - `tripadvisor_reviews`
@@ -166,6 +194,10 @@ On Windows, if a client cannot find `npx`, use the full Node.js path instead, fo
   "args": ["-y", "outscraper-mcp"]
 }
 ```
+
+## Security
+
+Security-sensitive issues should be reported according to [SECURITY.md](./SECURITY.md).
 
 ## Connection Modes
 

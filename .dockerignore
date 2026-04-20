@@ -11,3 +11,4 @@ dist
 .stateful-test-out.log
 wiki
 outscraper-mcp-server.wiki
+docker-mcp-registry

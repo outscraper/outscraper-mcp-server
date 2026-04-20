@@ -2,24 +2,24 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.outscraper/outscraper-mcp-server",
   "title": "Outscraper MCP Server",
-  "description": "Official Outscraper MCP server for businesses, Google Maps, company insights, contacts, balance, and async request lifecycle tools.",
+  "description": "Official Outscraper MCP server for business discovery, Google Maps intelligence, company enrichment, reviews, contact data, search, and structured web extraction.",
   "repository": {
     "url": "https://github.com/outscraper/outscraper-mcp-server",
     "source": "github"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "outscraper-mcp",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
           "name": "OUTSCRAPER_API_KEY",
-          "description": "Your Outscraper API key",
+          "description": "Your Outscraper API key. Required for authenticated tool calls in stdio mode and for non-cloud HTTP deployments.",
           "isRequired": false,
           "isSecret": true,
           "format": "string"

@@ -5,6 +5,36 @@ import { createToolResult, toolResultEnvelopeSchema } from "../../mcp/result.js"
 export class ProfileModule implements ToolModule {
   register(server: McpServer, context: ModuleContext): void {
     server.registerTool(
+      "ping",
+      {
+        title: "Outscraper Ping",
+        description: `
+Check whether the Outscraper MCP server is running and return basic server metadata.
+
+Best for:
+- validating local or container startup
+- confirming the MCP server is reachable before making live API calls
+- lightweight health checks in demos, IDE setups, or registry validation
+        `.trim(),
+        inputSchema: {},
+        outputSchema: toolResultEnvelopeSchema,
+      },
+      async () =>
+        createToolResult(
+          {
+            ok: true,
+            server: "outscraper-mcp",
+            transport: "mcp",
+            authentication_required_for_live_calls: true,
+          },
+          {
+            service: "profile",
+            operation: "ping",
+          },
+        ),
+    );
+
+    server.registerTool(
       "balance_get",
       {
         title: "Outscraper Balance",

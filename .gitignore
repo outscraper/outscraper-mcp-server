@@ -16,6 +16,7 @@ pnpm-debug.log*
 *.tgz
 *.wiki/
 outscraper-mcp-server.wiki/
+docker-mcp-registry/
 
 .DS_Store
 Thumbs.db

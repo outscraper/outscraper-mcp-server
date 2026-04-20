@@ -166,6 +166,38 @@ export class ReviewsModule implements ToolModule {
     );
 
     server.registerTool(
+      "tp_data",
+      {
+        title: "Trustpilot Data (Legacy Alias)",
+        description: "Legacy alias for trustpilot_data. Prefer trustpilot_data for new integrations.",
+        inputSchema: trustpilotDataInput,
+        outputSchema: toolResultEnvelopeSchema,
+      },
+      async (args, extra) => {
+        const asyncFlag = resolveAsyncFlag({
+          executionMode: args.execution_mode,
+          async: args.async,
+          defaultMode: "sync",
+          shouldUseAsyncInAuto: args.query.length > 1 || Boolean(args.enrichment?.length),
+        });
+
+        const response = await context.getClient(extra).trustpilotData({
+          query: args.query,
+          enrichment: args.enrichment,
+          fields: args.fields?.join(","),
+          async: asyncFlag,
+          webhook: args.webhook,
+        });
+
+        return createToolResult(response, {
+          service: "trustpilot",
+          operation: "data",
+          asyncRequested: asyncFlag,
+        });
+      },
+    );
+
+    server.registerTool(
       "trustpilot_data",
       {
         title: "Trustpilot Data",
@@ -192,6 +224,40 @@ export class ReviewsModule implements ToolModule {
         return createToolResult(response, {
           service: "trustpilot",
           operation: "data",
+          asyncRequested: asyncFlag,
+        });
+      },
+    );
+
+    server.registerTool(
+      "tp_reviews",
+      {
+        title: "Trustpilot Reviews (Legacy Alias)",
+        description: "Legacy alias for trustpilot_reviews. Prefer trustpilot_reviews for new integrations.",
+        inputSchema: trustpilotReviewsInput,
+        outputSchema: toolResultEnvelopeSchema,
+      },
+      async (args, extra) => {
+        const asyncFlag = resolveAsyncFlag({
+          executionMode: args.execution_mode,
+          async: args.async,
+          defaultMode: "async",
+          shouldUseAsyncInAuto: args.query.length > 1 || (args.reviews_limit ?? 0) > 50,
+        });
+
+        const response = await context.getClient(extra).trustpilotReviews({
+          query: args.query,
+          reviewsLimit: args.reviews_limit,
+          skip: args.skip,
+          languages: args.languages,
+          fields: args.fields?.join(","),
+          async: asyncFlag,
+          webhook: args.webhook,
+        });
+
+        return createToolResult(response, {
+          service: "trustpilot",
+          operation: "reviews",
           asyncRequested: asyncFlag,
         });
       },

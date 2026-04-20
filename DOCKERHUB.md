@@ -4,9 +4,9 @@ Official Docker image for the Outscraper MCP server.
 
 Use this image to expose Outscraper as a hosted MCP endpoint for:
 
-- business discovery and enrichment
-- Google Maps places, reviews, and photos
-- company insights and contact discovery
+- business discovery and lead generation
+- Google Maps intelligence, including places, reviews, and photos
+- company insights and contact enrichment
 - AI-assisted structured extraction from a single page with `ai_scraper`
 - async job submission and polling with `requests_get`
 
