@@ -7,7 +7,7 @@
     "url": "https://github.com/outscraper/outscraper-mcp-server",
     "source": "github"
   },
-  "version": "0.2.4",
+  "version": "0.2.5",
   "remotes": [
     {
       "type": "streamable-http",
@@ -27,7 +27,7 @@
     {
       "registryType": "npm",
       "identifier": "outscraper-mcp",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "transport": {
         "type": "stdio"
       },

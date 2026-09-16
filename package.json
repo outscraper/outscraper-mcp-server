@@ -1,6 +1,6 @@
 {
   "name": "outscraper-mcp",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "mcpName": "io.github.outscraper/outscraper-mcp-server",
   "description": "Official Outscraper MCP server for business discovery, Google Maps intelligence, company enrichment, reviews, contact data, and structured web extraction.",
   "type": "module",

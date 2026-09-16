@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.5
+
+### Fixed
+
+- Prevent recursive transport shutdown when a client terminates a stateful HTTP
+  session. Remove the closed session without closing its transport again, so
+  other sessions remain available and new clients can connect.
+- Add an HTTP regression test covering session termination, rejection of the
+  closed session ID, and continued operation of existing and new sessions.
+
 ## 0.2.4
 
 ### Fixed

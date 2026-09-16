@@ -140,7 +140,8 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
             sessions.delete(activeSessionId);
           }
 
-          void server.close();
+          // The SDK finishes server cleanup after this callback. Calling
+          // server.close() here would close this transport again recursively.
         };
 
         await server.connect(transport);
