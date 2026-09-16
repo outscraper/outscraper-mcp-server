@@ -1,4 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { SchemaMcpServer } from "./mcp/server.js";
 import { registerModules } from "./core/service.js";
 import type { AppConfig } from "./config.js";
 import { OutscraperClient } from "./outscraper/client.js";
@@ -17,7 +18,7 @@ import { SearchModule } from "./services/search/service.js";
 import { ValidatorsModule } from "./services/validators/service.js";
 
 export function createServer(config: AppConfig): McpServer {
-  const server = new McpServer({
+  const server = new SchemaMcpServer({
     name: config.serverName,
     version: config.serverVersion,
   });
