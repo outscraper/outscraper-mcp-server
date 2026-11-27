@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "outscraper": {
+      "command": "npx",
+      "args": ["-y", "outscraper-mcp@0.3.0"],
+      "env": {
+        "OUTSCRAPER_API_KEY": "${OUTSCRAPER_API_KEY}"
+      }
+    }
+  }
+}

@@ -63,6 +63,29 @@ gemini extensions config outscraper "Outscraper API Key"
 
 Installing the extension does not authorize paid data requests. Start catalog discovery with a free masked preview, inspect the current service schema, and check `pricing_get` before running paid work within an agreed scope and budget. See [Tools and Workflows](#tools-and-workflows) below.
 
+### Grok Build Plugin
+
+This repository is also an official [Grok Build plugin](https://docs.x.ai/build/features/skills-plugins-marketplaces). It adds one MCP server, `outscraper`, through the pinned `outscraper-mcp@0.3.0` Node bridge. Requires Node.js 20 or newer, npm/`npx` on your `PATH`, and an [Outscraper account API key](https://app.outscraper.com/api-key).
+
+Set `OUTSCRAPER_API_KEY` in the environment that launches Grok Build, using your private secret manager or local secret-injection mechanism. Grok expands the `${OUTSCRAPER_API_KEY}` reference in this plugin's `.mcp.json`. Keep the actual key out of chat, committed files, shell history, and screenshots.
+
+Install and enable the plugin:
+
+```bash
+grok plugin install https://github.com/outscraper/outscraper-mcp-server --trust
+grok plugin enable outscraper
+```
+
+Restart Grok Build, then use `grok inspect` or `/mcps` to inspect the loaded server. Tool discovery requires a valid Outscraper API key. No source build or separate local HTTP server is needed.
+
+The plugin runs over stdio and sends MCP requests, request arguments, and the supplied account key to `https://api.outscraper.com/mcp/<API_KEY>`. `npx` downloads the pinned package and its dependencies from the configured npm registry (normally `registry.npmjs.org`). The bridge uses the account's existing capabilities and billing permissions; the plugin adds no hooks, shell-execution tools, or telemetry. It is covered by this repository's [MIT license](./LICENSE).
+
+For direct hosted connections and other clients, visit the [Outscraper MCP setup guide](https://mcp.outscraper.com/) and [Outscraper](https://outscraper.com/). The hosted OAuth endpoint is `https://api.outscraper.com/mcp`; it currently requires HTTPS OAuth redirect URIs. This Grok Build package explicitly uses the API-key bridge, so it does not depend on compatibility with a localhost OAuth callback.
+
+Installing or trusting the plugin does not authorize paid requests. Start Business Catalog discovery with a small free masked preview. Inspect the live service schema and `pricing_get` before paid retrieval, scraping, or enrichment, and proceed only within the user's authorized scope and budget. A free tier is a usage allowance, not a separate preview mode for services. See [Tools and Workflows](#tools-and-workflows) and the [agent guide](https://outscraper.com/agents.md).
+
+Support: [support@outscraper.com](mailto:support@outscraper.com).
+
 ### Upgrading From 0.2.x
 
 Version 0.3.0 uses Rashida's tool definitions and results. Refresh your client's tool list and update saved workflows: catalog discovery uses `search_businesses`, full catalog retrieval uses `search_businesses_full`, and result retrieval uses `requests_get` with `id`. The previous `businesses_search` / `businesses_get` contract and Node-specific result envelope are not preserved. Review the [changelog](./CHANGELOG.md) before upgrading fixed integrations.
