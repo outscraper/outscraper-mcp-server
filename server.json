@@ -3,6 +3,7 @@
   "name": "io.github.outscraper/outscraper-mcp-server",
   "title": "Outscraper MCP Server",
   "description": "Outscraper MCP business discovery, Maps intelligence, enrichment, reviews, and contact data.",
+  "websiteUrl": "https://mcp.outscraper.com",
   "repository": {
     "url": "https://github.com/outscraper/outscraper-mcp-server",
     "source": "github"
