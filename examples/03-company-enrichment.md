@@ -1,28 +1,13 @@
 # Company Enrichment
 
-## Use Case
+Prompt: "Research these company domains and summarize their descriptions, industries, employee counts and locations. Explain pricing before starting."
 
-Enrich a shortlist of companies with structured company metadata for research or lead qualification.
-
-## Natural-Language Prompt
-
-Enrich these domains and return company descriptions, industry, employee count, location, and social links.
-
-## Recommended Tool
-
-- `company_insights`
-
-## Example Arguments
+Follow the [paid-service workflow](./README.md#before-paid-work). Inspect `company_insights` and price its returned billing unit. If advertised directly, call:
 
 ```json
 {
-  "query": ["outscraper.com", "stripe.com", "notion.so"],
-  "fields": ["name", "description", "industry", "employees", "location", "social_profiles"],
-  "execution_mode": "async"
+  "query": ["outscraper.com", "stripe.com", "notion.so"]
 }
 ```
 
-## Why Async Helps
-
-- enrichment across multiple domains can take longer
-- async mode returns a request id that can be polled with `requests_get`
+Use `requests_get` with the submission's `id` to read results. Summarize only returned fields and identify missing or partial company data. This is a standalone asynchronous service, separate from adding `company_insights` to a catalog full-data request's enrichments.

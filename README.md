@@ -1,423 +1,14 @@
 # Outscraper MCP
 
-Official MCP server for [Outscraper](https://outscraper.com/).
+Official Node MCP bridge for [Outscraper](https://outscraper.com/).
 
-Connect AI agents to Outscraper for business discovery, Google Maps intelligence, company and contact enrichment, review analysis, search, and structured web extraction.
-
-## Best For
-
-- local business prospecting and lead generation
-- Google Maps place, photo, and review intelligence
-- company and contact enrichment from known domains
-- async data collection workflows with polling
-- extracting structured information from a single page
-
-## Not Ideal For
-
-- browser automation or multi-step UI interaction
-- generic OAuth-based SaaS integrations
-- arbitrary document search outside the Outscraper data surface
-- website crawling sessions that require a persistent browser
-
-## Common Workflows
-
-- find businesses with `businesses_search`, then enrich a chosen record with `businesses_get`
-- search Google Maps places, then fetch reviews or photos for reputation analysis
-- enrich a company domain, validate emails, and check contact coverage
-- submit async jobs, then poll them with `requests_get`
-- extract structured data from a page with `ai_scraper`
-
-It exposes production-ready MCP tools for:
-
-- business discovery and enrichment
-- Google Maps places, reviews, photos, and chain detection
-- company insights, emails, email validation, and phone enrichment
-- Google Search and Google Images search
-- Yellow Pages, Booking, Yelp, Tripadvisor, Trustpilot, and Indeed data
-- account balance checks and async request lifecycle management
-
-The server supports stdio and HTTP transports, npm-based installation, hosted header or URL auth, and a normalized `structuredContent` result shape for MCP clients and agents.
-
-## What It Does
-
-This MCP server exposes Outscraper data sources and enrichment workflows to MCP-compatible clients.
-
-It is designed for:
-
-- business and place discovery
-- Google Maps review and photo retrieval
-- contact and company enrichment
-- AI-assisted structured extraction from a single page with `ai_scraper`
-- async request submission and polling through `requests_get`
-
-In practice, the server acts as a thin MCP layer over the Outscraper API:
-
-- MCP clients call tools on this server
-- the server authenticates with an Outscraper API key
-- requests are forwarded to Outscraper endpoints
-- results are returned in a normalized MCP tool envelope
+Use the same business catalog, scraping, enrichment, pricing, and request tools as the main Outscraper MCP server through an existing stdio or Node HTTP connection. Tool names, descriptions, parameters, annotations, and results come directly from Rashida, the Outscraper API backend. This package does not maintain a separate service catalog or transform tool results into a Node-specific envelope.
 
 ## Quick Start
 
-```bash
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
-```
+Requires Node.js 20 or newer and an Outscraper account API key. Keep the key in your client's private configuration or secret storage.
 
-For MCP clients, configure:
-
-- command: `npx`
-- args: `["-y", "outscraper-mcp"]`
-- env: `OUTSCRAPER_API_KEY=YOUR_API_KEY`
-
-For task-oriented workflows, copy-paste examples, and example agent skills, see the [examples](./examples/README.md) folder.
-
-## Current Tools
-
-- `ping`
-- `businesses_search`
-- `businesses_get`
-- `ai_scraper`
-- `google_maps_search`
-- `google_maps_reviews`
-- `company_insights`
-- `emails_and_contacts`
-- `emails_validator`
-- `google_maps_photos`
-- `chain_info`
-- `yellowpages_search`
-- `booking_reviews`
-- `phones_enricher`
-- `tp_data` (legacy alias for `trustpilot_data`)
-- `trustpilot_data`
-- `tp_reviews` (legacy alias for `trustpilot_reviews`)
-- `trustpilot_reviews`
-- `yelp_reviews`
-- `tripadvisor_search`
-- `tripadvisor_reviews`
-- `google_search`
-- `google_search_images`
-- `indeed_search`
-- `balance_get`
-- `requests_get`
-- `requests_list`
-- `requests_delete`
-
-These tools are aligned to the current documented Outscraper API shapes, including:
-
-- `POST /businesses`
-- `POST /ai-scraper`
-- `GET /businesses/{business_id}`
-- `GET /google-maps-search`
-- `GET /google-maps-photos`
-- `GET /google-search`
-- `GET /google-search-images`
-- `GET /yellowpages-search`
-- `GET /booking-reviews`
-- `GET /phones-enricher`
-- `GET /trustpilot`
-- `GET /trustpilot-reviews`
-- `GET /yelp-reviews`
-- `GET /tripadvisor-search`
-- `GET /tripadvisor-reviews`
-- `GET /indeed-search`
-- `GET /google-maps-reviews`
-- `GET /company-insights`
-- `GET /emails-and-contacts`
-- `GET /email-validator`
-- documented `ai_chain_info` enrichment via `google-maps-search`
-- `GET /profile/balance`
-- `GET /requests/{requestId}`
-- `DELETE /requests/{requestId}`
-- `GET /requests`
-
-### Unified Tool Result Shape
-
-Every tool now returns the same structured envelope:
-
-```json
-{
-  "data": {},
-  "meta": {
-    "service": "company_insights",
-    "operation": "get"
-  },
-  "async": {
-    "id": "request-id",
-    "status": "Pending",
-    "results_location": "https://api.outscraper.com/requests/request-id",
-    "is_async_submission": true,
-    "next_step": "Call requests_get with request_id=\"request-id\" to check progress."
-  }
-}
-```
-
-`async` is present when the response is an async submission or exposes async request metadata.
-
-### Execution Mode
-
-Async-capable tools now accept:
-
-```json
-{
-  "execution_mode": "auto"
-}
-```
-
-Available values:
-
-- `auto`: let the MCP server choose sync or async
-- `sync`: force direct response mode
-- `async`: force async submission mode
-
-The old boolean `async` is still accepted for compatibility, but `execution_mode` now has priority.
-
-## Install
-
-The recommended way to use this MCP server is from npm.
-
-### Run from npm
-
-```bash
-npx -y outscraper-mcp
-```
-
-Provide `OUTSCRAPER_API_KEY` through your MCP client config or shell environment.
-
-The server auto-loads `.env` on startup via `dotenv`.
-
-On Windows, if a client cannot find `npx`, use the full Node.js path instead, for example:
-
-```json
-{
-  "command": "C:\\Program Files\\nodejs\\npx.cmd",
-  "args": ["-y", "outscraper-mcp"]
-}
-```
-
-## Security
-
-Security-sensitive issues should be reported according to [SECURITY.md](./SECURITY.md).
-
-## Connection Modes
-
-The server currently supports these connection patterns:
-
-### 1. Local stdio MCP
-
-Best for:
-
-- Claude Desktop
-- Claude Code
-- Cursor
-- VS Code
-- Windsurf
-- local MCP development
-
-Auth source:
-
-- `OUTSCRAPER_API_KEY` environment variable
-
-Transport:
-
-- local process over stdio
-
-### 2. Remote stateless Streamable HTTP
-
-Best for:
-
-- hosted MCP endpoints
-- n8n
-- reverse proxy or domain-based deployment
-- containerized remote usage
-
-Auth source when `CLOUD_SERVICE=true`:
-
-- `X-OUTSCRAPER-API-KEY`
-- `X-API-KEY`
-- `Authorization: Bearer <api-key>`
-- `/v1/mcp/<api-key>` path auth
-
-Transport:
-
-- HTTP `POST /mcp`
-- HTTP `POST /v1/mcp/<api-key>`
-
-### 3. Remote stateful HTTP/SSE
-
-Best for:
-
-- session-based MCP usage
-- clients that rely on stateful HTTP transport semantics
-
-Auth source when `CLOUD_SERVICE=true`:
-
-- the same header or URL-based auth options as stateless HTTP
-
-Transport:
-
-- `POST /mcp`
-- `GET /mcp`
-- `DELETE /mcp`
-- and the same `/v1/mcp/<api-key>` route pattern
-
-Note:
-
-- stateful mode stores sessions in process memory, so it is better suited to a single instance or sticky-session deployment than horizontal scaling
-
-## ChatGPT Connector
-
-If you want to connect this server to ChatGPT as a remote MCP connector, the simplest hosted form is:
-
-```text
-https://your-domain.example/v1/mcp/YOUR_API_KEY
-```
-
-Recommended setup:
-
-1. Deploy the server over HTTPS behind a real domain or reverse proxy.
-2. Enable hosted mode with `CLOUD_SERVICE=true`.
-3. Use the URL-auth route if the connector cannot attach custom auth headers.
-4. Prefer header auth for server-to-server clients when custom headers are available.
-
-Typical connector values:
-
-- Name: `Outscraper MCP`
-- Description: `Business discovery, Google Maps data, enrichment, search, and AI scraping`
-- MCP Server URL: `https://your-domain.example/v1/mcp/YOUR_API_KEY`
-- Authentication: `None`
-
-Notes:
-
-- URL-auth is the most convenient option for connector-style setup, but it is less private than header auth because URLs are more likely to appear in logs.
-- Avoid temporary tunnels that inject browser warning pages unless your connector can bypass them cleanly.
-
-### Hosted Header Auth Mode
-
-If you want hosted behavior, enable:
-
-```bash
-set CLOUD_SERVICE=true
-```
-
-Then the HTTP caller can send the Outscraper API key in one of these headers:
-
-- `Authorization: Bearer <api-key>`
-- `X-API-KEY: <api-key>`
-- `X-OUTSCRAPER-API-KEY: <api-key>`
-
-In `CLOUD_SERVICE=true` HTTP mode, request headers are used as the API key source. In local stdio mode, `OUTSCRAPER_API_KEY` is still required.
-HTTP requests without one of these auth forms are rejected before MCP processing begins.
-
-### Hosted URL Auth Mode
-
-For ChatGPT-style connectors or other hosted setups that cannot send custom headers, you can also pass the API key in the path:
-
-```text
-http://localhost:3000/v1/mcp/YOUR_API_KEY
-```
-
-This route supports the same MCP behavior as `/mcp`, but authenticates from the URL path when `CLOUD_SERVICE=true`.
-For server-to-server integrations, header auth is still preferred because URL-based API keys are more likely to appear in logs.
-
-### Run with Streamable HTTP
-
-```bash
-set HTTP_STREAMABLE_SERVER=true
-set HOST=localhost
-set PORT=3000
-npx -y outscraper-mcp
-```
-
-MCP endpoint:
-
-```text
-http://localhost:3000/mcp
-```
-
-Hosted URL auth endpoint:
-
-```text
-http://localhost:3000/v1/mcp/YOUR_API_KEY
-```
-
-Health endpoint:
-
-```text
-http://localhost:3000/health
-```
-
-### Run with Docker Compose
-
-This repository also includes a `docker-compose.yml` for hosted/container deployments:
-
-```bash
-docker compose up --build -d
-```
-
-Default container behavior:
-
-- binds `3000:3000`
-- enables `CLOUD_SERVICE=true`
-- enables stateless Streamable HTTP
-- listens on `0.0.0.0`
-- uses `https://api.outscraper.com` as the upstream API base URL
-
-Endpoints:
-
-```text
-http://localhost:3000/mcp
-http://localhost:3000/v1/mcp/YOUR_API_KEY
-http://localhost:3000/health
-```
-
-Important notes for Docker usage:
-
-- this compose file is intended for hosted remote access, not local stdio clients
-- by default it expects callers to authenticate per request, not through a single server-wide API key
-- if you put the service behind a domain or reverse proxy, prefer header auth for server-to-server usage
-- URL auth is available mainly for connector flows that cannot attach custom headers
-
-### Run with Stateful HTTP/SSE Mode
-
-This mode uses local session management:
-
-```bash
-set SSE_LOCAL=true
-set HOST=localhost
-set PORT=3000
-npx -y outscraper-mcp
-```
-
-You can also enable the same mode with:
-
-```bash
-set HTTP_STATEFUL_SERVER=true
-set HOST=localhost
-set PORT=3000
-npx -y outscraper-mcp
-```
-
-In this mode the server accepts:
-
-- `POST /mcp` for initialize and subsequent requests
-- `GET /mcp` for the session stream
-- `DELETE /mcp` for session termination
-
-The session is tracked through the `mcp-session-id` header.
-
-Hosted URL auth also works in stateful mode through:
-
-```text
-http://localhost:3000/v1/mcp/YOUR_API_KEY
-```
-
-## Client Setup
-
-<details>
-<summary>Claude Desktop</summary>
-
-Add this to your Claude Desktop MCP config:
+For a client that launches local MCP processes:
 
 ```json
 {
@@ -433,336 +24,169 @@ Add this to your Claude Desktop MCP config:
 }
 ```
 
-</details>
+The process uses stdio by default. It sends tool requests to the API-key endpoint at `https://api.outscraper.com/mcp/<API_KEY>`. Do not put a real key in shared examples, screenshots, or support messages.
 
-<details>
-<summary>Claude Code</summary>
+If your client supports remote HTTP directly, the Node bridge is optional:
 
-Add the server with the Claude Code CLI:
+- OAuth connection: `https://api.outscraper.com/mcp`
+- API-key connection: `https://api.outscraper.com/mcp/<API_KEY>`
 
-```bash
-claude mcp add outscraper -e OUTSCRAPER_API_KEY=YOUR_API_KEY -- npx -y outscraper-mcp
-```
+The plain `/mcp` API endpoint uses OAuth; a normal API key is not an OAuth bearer token. The Node HTTP server's header authentication described below is separate. The [MCP setup website](https://mcp.outscraper.com/) provides client setup guidance.
 
-</details>
+## How It Works
 
-<details>
-<summary>Cursor</summary>
+1. Your client connects to this Node process using stdio or Streamable HTTP.
+2. Node forwards `tools/list` and `tools/call` to the configured API origin's `/mcp/<API_KEY>` endpoint.
+3. Rashida supplies tool definitions, validates arguments and account access, executes tools, and returns results.
+4. Node returns those MCP results without adding the old `structuredContent.data` wrapper or converting asynchronous requests into synchronous responses.
 
-Add this to your global MCP configuration:
+Refresh your client's tools after an upstream release. Tools are read from the backend rather than cached in a local catalog. Protocol initialization and transport sessions are handled locally; the upstream API remains stateless. The bridge does not automatically retry submissions. A lost connection or timeout does not prove a paid request failed to start.
 
-```json
-{
-  "mcpServers": {
-    "outscraper": {
-      "command": "npx",
-      "args": ["-y", "outscraper-mcp"],
-      "env": {
-        "OUTSCRAPER_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
+The API host selects the organization, and the key must belong to that organization. An API-key connection receives the capabilities allowed for its organization. Targetron remains limited to business catalog, catalog pricing, and account balance; it does not gain scraping tools through Node. Use that organization's API origin in `OUTSCRAPER_API_BASE_URL` when connecting to another brand.
 
-</details>
+## Tools and Workflows
 
-<details>
-<summary>Windsurf</summary>
+Inspect `tools/list` and the live schemas after connecting. The available tools depend on the backend deployment and organization.
 
-Add this to your MCP config:
+| Tool | Purpose |
+| --- | --- |
+| `search`, `fetch` | Natural-language catalog discovery and masked single-record previews |
+| `search_businesses` | Structured, free masked catalog previews |
+| `search_businesses_full` | Paid full catalog records and requested enrichments |
+| `pricing_get` | Organization rates, recorded allowances, and optional cost scenarios |
+| `balance_get` | Account billing data and dashboard link |
+| `discover_services` | Find enabled services, including services already exposed as direct tools |
+| `get_service_schema` | Load one service's parameters and current schema version |
+| `run_service` | Start an asynchronous service request |
+| `requests_get`, `requests_list` | Read results and account request history |
 
-```json
-{
-  "mcpServers": {
-    "outscraper": {
-      "command": "npx",
-      "args": ["-y", "outscraper-mcp"],
-      "env": {
-        "OUTSCRAPER_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
+Common services are also exposed as direct tools. Use discovery for the rest rather than loading every schema. Direct tools and `run_service` use the same execution and pricing rules. Business catalog preview/full modes do not apply to scraping or enrichment services.
 
-</details>
+### Preview Business Catalog Data
 
-<details>
-<summary>VS Code</summary>
-
-For `settings.json`:
-
-```json
-{
-  "mcp": {
-    "inputs": [
-      {
-        "type": "promptString",
-        "id": "outscraperApiKey",
-        "description": "Outscraper API Key",
-        "password": true
-      }
-    ],
-    "servers": {
-      "outscraper": {
-        "command": "npx",
-        "args": ["-y", "outscraper-mcp"],
-        "env": {
-          "OUTSCRAPER_API_KEY": "${input:outscraperApiKey}"
-        }
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary>Cline / Roo Code / other command-based MCP clients</summary>
-
-Use the standard stdio command form:
-
-```json
-{
-  "mcpServers": {
-    "outscraper": {
-      "command": "npx",
-      "args": ["-y", "outscraper-mcp"],
-      "env": {
-        "OUTSCRAPER_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary>n8n</summary>
-
-For n8n or other HTTP MCP clients, run the server in Streamable HTTP mode:
-
-```bash
-set HTTP_STREAMABLE_SERVER=true
-set HOST=localhost
-set PORT=3000
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
-```
-
-Then use:
-
-```text
-http://localhost:3000/mcp
-```
-
-</details>
-
-## Tool Examples
-
-### Search businesses with structured filters
+Call `search_businesses` with:
 
 ```json
 {
   "filters": {
     "country_code": "US",
-    "states": ["NY"],
-    "cities": ["New York"],
-    "types": ["restaurant", "cafe"]
+    "states": ["MA"],
+    "cities": ["boston"],
+    "types": ["dentist"],
+    "has_website": true
   },
-  "fields": ["name", "phone", "website", "address", "rating", "reviews"],
-  "limit": 25
+  "limit": 5
 }
 ```
 
-Natural-language `query` support on `/businesses` currently depends on Outscraper's own parser behavior. In live testing, structured `filters` were reliable while free-form `query` values often returned `Could not parse query into a valid request format.`
+Preview fields may be masked. For authorized full retrieval, price `search_businesses_full` first and select actual returned IDs using `filters.os_ids`. Paid pages and repeated calls can each record usage. See the [agent guide](https://outscraper.com/agents.md) for catalog filters and enrichment guidance; the connected server's schema remains authoritative.
 
-### Extract structured data with AI Scraper
+### Discover and Run a Service
+
+Call `discover_services`:
+
+```json
+{"query": "google maps search", "limit": 5}
+```
+
+Then call `get_service_schema` with an ID returned by discovery:
+
+```json
+{"service_id": "google_maps_search"}
+```
+
+Before paid execution, call `pricing_get`, explain the returned units, rates and estimate limitations, and obtain authorization or continue within an agreed scope and budget:
+
+```json
+{"service_id": "google_maps_search", "quantity": 20}
+```
+
+For one query capped at 20 places, this prices the scenario at that cap. Fewer extracted places mean fewer base-service units. Check each service's limit semantics and price enrichments separately; there is no fixed free allowance shared by all services or organizations.
+
+Call `run_service`, replacing the version placeholder with the exact returned `schema_version`:
 
 ```json
 {
-  "query": "https://outscraper.com",
-  "prompt": "Extract company name, company description, and people mentioned on the page.",
-  "schema": {
-    "type": "object",
-    "required": [],
-    "properties": {
-      "company_name": { "type": "string" },
-      "company_description": { "type": "string" },
-      "people": {
-        "type": "array",
-        "items": { "type": "string" }
-      }
-    }
-  },
-  "execution_mode": "sync"
+  "service_id": "google_maps_search",
+  "schema_version": "<returned schema_version>",
+  "parameters": {"query": ["dentists in Boston"], "limit": 20}
 }
 ```
 
-Use `execution_mode: "async"` if you want a request id and plan to poll later with `requests_get`.
+If `google_maps_search` is advertised directly, you can instead call it with `{"query":["dentists in Boston"],"limit":20}`. Use one execution path, not both. Submission returns an `id` and `status: "Pending"`.
 
-### Get one business
+### Read Results
 
-```json
-{
-  "business_id": "YOUR_BUSINESS_ID",
-  "fields": ["name", "phone", "website", "address", "rating", "reviews"]
-}
-```
-
-### Search Google Maps
+Call `requests_get` with the returned `id`:
 
 ```json
-{
-  "query": ["restaurants brooklyn usa"],
-  "limit": 20,
-  "language": "en",
-  "region": "us"
-}
+{"id": "<returned request id>", "limit": 50}
 ```
 
-### Fetch Google Maps reviews
+Poll at bounded intervals while status is `Pending`; report outstanding work if your wait budget expires. Missing or expired results may also appear as `Pending`, so do not submit a replacement automatically. `Success` and `Failure` are the backend's completion statuses.
 
-```json
-{
-  "query": ["ChIJrc9T9fpYwokRdvjYRHT8nI4"],
-  "reviews_limit": 20,
-  "sort": "newest",
-  "language": "en"
-}
+Follow `next_cursor` with the same `id` and `limit`. Preserve query and record indexes and empty result groups. If a page contains `fragment.encoding: "json_text"`, concatenate fragment text in cursor order and parse the complete JSON, not each fragment independently.
+
+`requests_list` uses `type: "running"` or `"finished"`, plus `skip` and `limit`. It returns `items` and `has_more`; advance `skip` by the number of returned items. After an ambiguous submission, inspect both history types before deciding whether to try again. Missing history does not prove the request never started.
+
+### Pricing
+
+Use `pricing_get` before paid work. Rates and recorded usage come from the connected organization and account; do not hardcode prices or promise a universal first-500 free tier. Estimates are advisory, exclude pending usage, and do not reserve credits or enforce a spending cap. Unknown pricing or allowance does not mean free. `balance_get` provides account billing information and a dashboard link. Request history can expose recorded service usage, but it is not a guaranteed per-conversation charge total.
+
+More [task examples](./examples/README.md) and [example agent skills](./examples/skills/README.md) are included in this repository.
+
+## Run an HTTP Bridge
+
+Build from source, then enable stateless Streamable HTTP:
+
+```bash
+npm ci
+npm run build
+CLOUD_SERVICE=true HTTP_STREAMABLE_SERVER=true HOST=127.0.0.1 PORT=3000 npm start
 ```
 
-### Get company insights
+In hosted mode, each request supplies its own API key. Supported local routes are:
 
-```json
-{
-  "query": ["outscraper.com"],
-  "fields": ["name", "description", "industry"],
-  "execution_mode": "async"
-}
+- `/mcp`, with `X-OUTSCRAPER-API-KEY`, `X-API-KEY`, or `Authorization: Bearer <API_KEY>`
+- `/v1/mcp/<API_KEY>`, including a trailing slash
+- `/health`, a process health check
+
+Header credentials take precedence over a key in the path. `CLOUD_SERVICE=true` uses request credentials rather than a shared `OUTSCRAPER_API_KEY`. With hosted mode off, the process uses its configured `OUTSCRAPER_API_KEY`; keep such a server private because all callers would use that account.
+
+Set `HTTP_STATEFUL_SERVER=true` for session-based Streamable HTTP. `SSE_LOCAL=true` remains a deprecated alias for this mode; it is not a legacy SSE endpoint. Send the same credentials on every session request. Stateless GET and DELETE return 405. Use HTTPS at the public reverse proxy.
+
+These routes remain available in the Node application. Updating this package does not move DNS or restore a retired public route. To preserve `https://mcp.outscraper.com/v1/mcp/<API_KEY>`, route that path to a deployed Node bridge at the reverse proxy; the root of the host can continue serving the setup website. Do not redirect protocol POST requests through a landing page.
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `OUTSCRAPER_API_KEY` | Unset | Account key for stdio or private HTTP mode |
+| `OUTSCRAPER_API_BASE_URL` | `https://api.outscraper.com` | API origin; the bridge appends `/mcp/<API_KEY>` |
+| `CLOUD_SERVICE` | `false` | Resolve HTTP credentials per request |
+| `HTTP_STREAMABLE_SERVER` | `false` | Enable stateless HTTP |
+| `HTTP_STATEFUL_SERVER` | `false` | Enable stateful HTTP; takes precedence over stateless mode |
+| `SSE_LOCAL` | `false` | Deprecated alias for stateful HTTP |
+| `HOST` | `localhost` | HTTP listen address |
+| `PORT` | `3000` | HTTP listen port |
+
+The `.cloud` API mirror is supported. Use an API origin without `/mcp`, credentials, or query parameters for `OUTSCRAPER_API_BASE_URL`. The chosen deployment must support the keyed endpoint.
+
+## Upgrade and Deployment
+
+This release aligns the Node tool interface with the current Rashida interface. Existing API keys, launch settings and Node connection paths remain usable. Saved workflows must refresh their tool definitions and adopt the current names and arguments: catalog preview/full tools replace the old catalog interface, request reads use `id`, and services always submit asynchronous requests. Old-only tools and aliases are not retained. Tool results use the backend's MCP content rather than the previous Node envelope.
+
+Deploy Rashida's `/mcp/<API_KEY>` endpoint before releasing or deploying this bridge. There is deliberately no fallback to the old REST adapters, which would reintroduce different tools and behavior. Verify tool discovery and an authenticated read with a disposable test account on the intended API host.
+
+Redact API keys from proxy, access, error and tracing logs on both the Node route and upstream API path. Never log full key-bearing URLs. `/health` only checks the Node process; it does not establish upstream readiness or account access. Route old public connection paths explicitly if retaining them, and verify them through the public proxy before announcing compatibility.
+
+## Development
+
+```bash
+npm ci
+npm run check
+npm test
+npm run build
 ```
 
-### Find emails and contacts
-
-```json
-{
-  "query": ["outscraper.com"],
-  "preferred_contacts": ["technical", "decision makers"],
-  "execution_mode": "sync"
-}
-```
-
-### Validate email addresses
-
-```json
-{
-  "query": ["support@outscraper.com"],
-  "execution_mode": "sync"
-}
-```
-
-### Fetch Google Maps photos
-
-```json
-{
-  "query": ["NoMad Restaurant, NY, USA"],
-  "photos_limit": 5,
-  "limit": 1,
-  "execution_mode": "sync"
-}
-```
-
-### Get chain info
-
-```json
-{
-  "query": ["Starbucks, New York, NY, USA"],
-  "limit": 1,
-  "execution_mode": "sync"
-}
-```
-
-### Get Trustpilot business data
-
-```json
-{
-  "query": ["outscraper.com"],
-  "execution_mode": "sync"
-}
-```
-
-### Search Google
-
-```json
-{
-  "query": ["outscraper"],
-  "pages_per_query": 1,
-  "execution_mode": "sync"
-}
-```
-
-### Search Google Images
-
-```json
-{
-  "query": ["outscraper"],
-  "limit": 5,
-  "execution_mode": "sync"
-}
-```
-
-### Search Indeed
-
-```json
-{
-  "query": ["https://www.indeed.com/jobs?q=software+engineer&l=New+York%2C+NY"],
-  "limit": 10,
-  "execution_mode": "sync"
-}
-```
-
-### Check account balance
-
-```json
-{}
-```
-
-### Delete async request
-
-```json
-{
-  "request_id": "YOUR_REQUEST_ID"
-}
-```
-
-## Known Limitations
-
-- `businesses_search` works reliably with structured `filters`, but free-form `query` values on `/businesses` may fail with `Could not parse query into a valid request format.` This behavior was reproduced against the live API, not only inside the MCP layer.
-- `ai_scraper` works best through `POST` with a JSON body. In live validation, `POST` accepted `prompt` and `schema` reliably, while `GET` variants around `schema` and `query_schema` did not match the same behavior consistently.
-- When Outscraper OpenAPI examples and live API behavior differ, live endpoint behavior should be treated as the source of truth.
-- `businesses_search` is intentionally exposed here as a synchronous MCP tool because the current `/businesses` OpenAPI shape is request-body-based and did not prove to be a stable async-style workflow during live validation.
-- `execution_mode="auto"` is heuristic-driven. It is designed to choose a practical default, but callers that need deterministic behavior should explicitly use `sync` or `async`.
-- HTTP hosted mode requires correct auth headers when `CLOUD_SERVICE=true`; stdio mode still expects `OUTSCRAPER_API_KEY` in the process environment.
-- `chain_info` is implemented from the documented `ai_chain_info` enrichment on `google-maps-search`, because Outscraper currently does not describe a standalone `chain info` endpoint.
-- `builtwith` is not currently exposed as a tool because Outscraper currently does not document a dedicated BuiltWith endpoint.
-
-## Tool Selection Notes
-
-- Use `businesses_search` for structured business discovery with filters and cursor pagination.
-- Use `businesses_get` once you already have a concrete business id.
-- Use `google_maps_search` for Google Maps-style place discovery from human search queries.
-- Use `google_maps_reviews` when the user specifically needs review data rather than place discovery.
-- Use `company_insights` for firmographics and company profile enrichment.
-- Use `emails_and_contacts` for contact discovery from known domains.
-- Use `requests_get`, `requests_list`, and `requests_delete` only for async lifecycle management.
-- Use `balance_get` for account and billing checks, not business data retrieval.
-
-## Notes
-
-- The server supports stdio, stateless Streamable HTTP, and stateful local HTTP/SSE mode.
-- `CLOUD_SERVICE=true` enables header-based API key resolution for HTTP requests.
-- For npm publication, package contents are intentionally limited to runtime artifacts and docs.
-- Client-specific config snippets in this README are meant as practical templates; the exact settings UI and config key names may vary slightly between MCP clients and versions.
+Tool behavior belongs in Rashida. Add or update backend services there; this bridge should continue forwarding their published schemas and results without a matching local adapter.

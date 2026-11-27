@@ -1,68 +1,21 @@
 ---
 name: local-market-scout
-description: Discover and compare local businesses in a city or region using multiple Outscraper MCP tools. Use when an agent needs to find places, rank them by ratings or review volume, inspect reviews, and summarize local market patterns for sales, partnerships, market research, or competitive scouting.
+description: Discover and compare local businesses with Outscraper catalog previews or authorized Google Maps extraction and review analysis, using current MCP schemas and pricing.
 ---
 
 # Local Market Scout
 
-Use this skill to evaluate a local market in a practical, business-first way.
+Use this workflow for local business research. Establish the user's geography, categories, qualification criteria and intended output; do not add restrictive filters without a reason grounded in the request.
 
 ## Workflow
 
-1. Start with `google_maps_search` to find businesses in the target city or category.
-2. Keep only the most relevant places by rating, review count, and business fit.
-3. If the user needs deeper insight, call `google_maps_reviews` for the shortlisted places.
-4. Summarize:
-   - strongest businesses
-   - common customer expectations
-   - obvious market gaps
+1. Inspect available tools. Use a small `search_businesses` preview for stored catalog data, preserving masked fields. Use Google Maps extraction when the task calls for fresh service results and the organization supports services.
+2. For paid catalog retrieval or service execution, call `pricing_get`, explain billing units and estimate limitations, and obtain approval or reuse the agreed scope and budget.
+3. Inspect the chosen service schema. An advertised `google_maps_search` tool accepts `{"query":["bars kyiv ukraine"],"limit":20}`; the limit applies per query. Otherwise use discovery and `run_service` with the returned schema version.
+4. Save the submitted request `id` and read `requests_get` results with bounded polling and pagination before selecting a shortlist.
+5. If review analysis is requested, inspect and price `google_maps_reviews`. Use actual Google place IDs from the user or previous results, not catalog IDs. A direct call can use `{"query":["<actual place ID>"],"reviews_limit":40,"sort":"newest"}`.
+6. Summarize the observed candidates, review themes and sampling limitations. A bounded sample is not an exhaustive market census or ranking.
 
-## Recommended Inputs
+Do not duplicate paid requests after a timeout. Preserve result indexes and concatenate marked JSON fragments before parsing. Report outstanding or missing data clearly.
 
-- location
-- category
-- ideal review threshold
-- whether the user wants just discovery or review analysis too
-
-## Preferred Tool Pattern
-
-### Step 1. Discovery
-
-Use `google_maps_search`.
-
-Good arguments:
-
-```json
-{
-  "query": ["bars kyiv ukraine"],
-  "limit": 20,
-  "language": "en",
-  "region": "ua",
-  "fields": ["name", "full_address", "rating", "reviews", "place_id"],
-  "execution_mode": "sync"
-}
-```
-
-### Step 2. Review Analysis
-
-Use `google_maps_reviews` on the shortlisted `place_id` values.
-
-```json
-{
-  "query": ["PLACE_ID_1", "PLACE_ID_2"],
-  "reviews_limit": 40,
-  "sort": "newest",
-  "language": "en",
-  "execution_mode": "sync"
-}
-```
-
-## Output Style
-
-Return:
-
-- top candidates
-- one-paragraph market summary
-- review-driven insights if review analysis was requested
-
-Do not dump raw records unless the user explicitly asks for them.
+Targetron supports catalog, catalog pricing and balance only. Complete the supported catalog work and explain when the requested review-scraping step is unavailable.

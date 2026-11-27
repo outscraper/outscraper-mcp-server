@@ -11,16 +11,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.outscraper.com/mcp",
-      "headers": [
-        {
-          "name": "X-OUTSCRAPER-API-KEY",
-          "description": "Your Outscraper API key.",
-          "isRequired": true,
-          "isSecret": true,
-          "format": "string"
-        }
-      ]
+      "url": "https://api.outscraper.com/mcp"
     }
   ],
   "packages": [
@@ -34,14 +25,21 @@
       "environmentVariables": [
         {
           "name": "OUTSCRAPER_API_KEY",
-          "description": "Your Outscraper API key. Required for authenticated tool calls in stdio mode and for non-cloud HTTP deployments.",
+          "description": "Your Outscraper API key. Required for tool discovery and calls in stdio mode and non-cloud HTTP deployments.",
           "isRequired": true,
           "isSecret": true,
           "format": "string"
         },
         {
+          "name": "OUTSCRAPER_API_BASE_URL",
+          "description": "API base URL for the connected organization, without /mcp or credentials. Defaults to https://api.outscraper.com; requires the Rashida API-key MCP endpoint.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
           "name": "CLOUD_SERVICE",
-          "description": "Set to true to require the API key from Authorization or X-API-KEY headers in HTTP mode",
+          "description": "Set to true to accept per-request API keys from supported headers or /v1/mcp/<api-key> in HTTP mode.",
           "isRequired": false,
           "isSecret": false,
           "format": "string"

@@ -1,39 +1,28 @@
 # Competitor Landscape
 
-## Use Case
+Prompt: "Research competitors in local SEO data enrichment, then enrich the relevant company domains and summarize positioning differences. Explain pricing and agree on the scope of each stage."
 
-Build a quick competitor landscape from web search plus company enrichment.
+Follow the [paid-service workflow](./README.md#before-paid-work) for every stage, reusing authorization that already covers the work.
 
-## Natural-Language Prompt
+## Search
 
-Search for top competitors in local SEO data enrichment, then enrich the most relevant company domains and summarize positioning differences.
-
-## Recommended Tool Sequence
-
-- `google_search`
-- `company_insights`
-- optionally `ai_scraper`
-
-## Step 1. Search
+If `google_search` is advertised directly, call:
 
 ```json
 {
   "query": ["local seo lead generation data enrichment competitors"],
-  "pages_per_query": 1,
-  "execution_mode": "sync"
+  "pages_per_query": 1
 }
 ```
 
-## Step 2. Enrich Shortlisted Domains
+Read completed results with `requests_get`. Check the returned billing unit when pricing; pages and result records are not interchangeable units.
+
+## Enrich the Shortlist
+
+Select actual relevant domains from the results. Inspect and price `company_insights`, then call it with an array of those domains:
 
 ```json
-{
-  "query": ["outscraper.com", "apollo.io", "zoominfo.com"],
-  "fields": ["name", "description", "industry"],
-  "execution_mode": "sync"
-}
+{"query": ["<selected domain 1>", "<selected domain 2>"]}
 ```
 
-## Optional Step 3. Extract Structured Messaging
-
-Use `ai_scraper` on each homepage if you want structured feature or messaging comparison.
+Read that request's results before comparing companies. If homepage messaging is needed, discover `ai_scraper` and use the [company profile example](./05-ai-scraper-company-profile.md) as a separately priced step. Distinguish source claims from your analysis.

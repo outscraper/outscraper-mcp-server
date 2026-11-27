@@ -1,64 +1,25 @@
 ---
 name: async-company-research
-description: Submit long-running Outscraper MCP jobs, poll for completion, and summarize the result. Use when an agent needs to work with async-capable tools such as company_insights, emails_and_contacts, google_maps_search, or ai_scraper in async mode and manage the request lifecycle through requests_get.
+description: Submit authorized Outscraper research services, poll within a bounded wait budget, and summarize completed results using the current MCP schemas.
 ---
 
 # Async Company Research
 
-Use this skill when the upstream task may not finish immediately and the workflow should explicitly handle request ids.
+Use this workflow when the user requests company research that needs asynchronous scraping or enrichment. Follow the user's authorization; this skill alone does not authorize a paid request.
 
 ## Workflow
 
-1. Choose the target tool.
-2. Submit with `execution_mode: "async"`.
-3. Capture the returned `request_id`.
-4. Poll with `requests_get`.
-5. Once complete, summarize the final payload.
+1. Inspect available tools. Use `discover_services` and `get_service_schema` to identify one relevant service and read its parameters, billing guidance and schema version. If service tools are unavailable on this organization, report that limitation.
+2. Call `pricing_get`, explain units, rates and estimate limitations, and obtain approval or reuse the agreed scope and budget. Do not assume a universal free allowance or that each input is one billable unit.
+3. Submit once with the advertised direct tool or `run_service` using the returned schema version. All services run asynchronously; choose one execution path.
+4. Save the returned `id`. Call `requests_get` with `{"id":"<returned request id>","limit":50}` and poll at bounded intervals within the client's wait budget.
+5. Follow result `next_cursor` values with the same ID and limit. Preserve query/record indexes and empty groups. Concatenate marked `json_text` fragments before parsing.
+6. Summarize only completed results. Report missing data, failures, or an outstanding request ID accurately.
 
-## Tools This Skill Pairs Well With
-
-- `company_insights`
-- `emails_and_contacts`
-- `google_maps_search`
-- `ai_scraper`
-
-## Canonical Pattern
-
-### Step 1. Submit
-
-Example with `company_insights`:
+For example, after pricing and authorization, an advertised `company_insights` tool accepts:
 
 ```json
-{
-  "query": ["outscraper.com", "stripe.com", "notion.so"],
-  "fields": ["name", "description", "industry", "employees"],
-  "execution_mode": "async"
-}
+{"query": ["outscraper.com", "stripe.com", "notion.so"]}
 ```
 
-### Step 2. Poll
-
-Use `requests_get`:
-
-```json
-{
-  "request_id": "REQUEST_ID_FROM_STEP_1"
-}
-```
-
-Repeat until the job is complete or fails.
-
-## Behavior Rules
-
-- Tell the user when an async job has been submitted.
-- Do not pretend a pending request is complete.
-- If the tool returns a completed response directly, summarize it immediately.
-- If the job is still pending, say so clearly and give the request id.
-
-## Output Style
-
-When complete, produce:
-
-- the key result
-- the business interpretation
-- any missing or partial data that the user should know about
+After an ambiguous submission, inspect both `requests_list` history types (`running` and `finished`). Missing history or prolonged `Pending` does not prove work never started. Never automatically repeat a paid request or imply that stopping polling cancels it.

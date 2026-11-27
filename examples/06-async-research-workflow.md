@@ -1,37 +1,31 @@
 # Async Research Workflow
 
-## Use Case
+Prompt: "Research these companies, check the job until it finishes within a reasonable wait, and summarize the returned data. Explain pricing before starting."
 
-Run a larger research job, then poll until the result is ready.
+All scraping and enrichment services submit asynchronous requests. Follow the [pricing and authorization steps](./README.md#before-paid-work) before submission.
 
-## Natural-Language Prompt
+## Submit Once
 
-Submit a large enrichment job asynchronously, then keep checking until it completes and summarize the final result.
-
-## Recommended Tools
-
-- `company_insights`
-- `requests_get`
-
-## Step 1. Submit Async Job
+For an advertised `company_insights` tool:
 
 ```json
 {
-  "query": ["outscraper.com", "shopify.com", "hubspot.com", "airtable.com"],
-  "fields": ["name", "description", "industry", "employees"],
-  "execution_mode": "async"
+  "query": ["outscraper.com", "shopify.com", "hubspot.com", "airtable.com"]
 }
 ```
 
-## Step 2. Poll By Request ID
+Save the returned `id`; `Pending` means the work has not completed.
+
+## Read Results
+
+Call `requests_get`:
 
 ```json
-{
-  "request_id": "REQUEST_ID_FROM_STEP_1"
-}
+{"id": "<returned request id>", "limit": 50}
 ```
 
-## Optional Tools
+Poll at bounded intervals while status is `Pending`. If the wait budget expires, report the outstanding ID. When results arrive, follow `next_cursor` with the same ID and limit; preserve indexes and concatenate marked JSON fragments before parsing.
 
-- `requests_list` to inspect recent jobs
-- `requests_delete` if a queued job is no longer needed
+## Check History After an Ambiguous Submission
+
+Call `requests_list` separately for `{"type":"running","limit":25}` and `{"type":"finished","limit":25}`. Page with `skip` when `has_more` is true. Reuse a known request ID. Missing history or prolonged `Pending` does not justify automatically submitting another paid request. There is no MCP cancellation or request-deletion tool in the current backend contract.

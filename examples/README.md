@@ -1,71 +1,29 @@
 # Examples
 
-This folder contains task-oriented examples for using Outscraper through MCP.
+Task-oriented examples for the same MCP tools exposed by the main Outscraper backend. Inspect the connected server's tools and current schemas before using these examples; availability depends on the deployment and organization. Targetron supports business catalog, catalog pricing and balance only.
 
-The structure is inspired by how teams like Firecrawl present usage: practical workflows first, API details second.
+## Before Paid Work
 
-Use these examples when you want to:
+1. Identify the service with `discover_services` and inspect it with `get_service_schema`. A direct tool may already be advertised; it uses the same service parameters.
+2. Call `pricing_get` with the public service ID and a quantity only when the returned billing unit and requested limits justify it. Explain rates, allowances and estimate limitations, including requested enrichments.
+3. Obtain paid-use authorization or continue within an existing agreed scope and budget. Quotes do not enforce a spending cap.
+4. Submit once through the direct tool or `run_service` with the returned `schema_version` and `parameters`. These services always run asynchronously.
+5. Save the returned `id` and call `requests_get` with `{"id":"<returned request id>","limit":50}`. Poll within a bounded wait budget, then follow any result `next_cursor` using the same ID and limit.
 
-- copy a prompt directly into an MCP client
-- understand which tool to use for a business task
-- see when to use sync versus async execution
-- combine discovery, enrichment, and polling into one workflow
+Preserve query and record indexes and empty result groups. Concatenate `json_text` fragments in cursor order before parsing. Do not retry a paid submission automatically after a timeout; inspect the running and finished request history first. Missing history does not prove it never started.
 
-Included examples:
+Free masked previews and paid full-data retrieval apply only to Business Catalog. A service's free usage allowance does not create a preview mode. Read current account rates instead of assuming a fixed free tier.
 
-- [01-business-discovery.md](./01-business-discovery.md)
-- [02-review-monitoring.md](./02-review-monitoring.md)
-- [03-company-enrichment.md](./03-company-enrichment.md)
-- [04-contact-discovery.md](./04-contact-discovery.md)
-- [05-ai-scraper-company-profile.md](./05-ai-scraper-company-profile.md)
-- [06-async-research-workflow.md](./06-async-research-workflow.md)
-- [07-competitor-landscape.md](./07-competitor-landscape.md)
-- [08-market-entry-scouting.md](./08-market-entry-scouting.md)
+## Workflows
 
-Agent skill examples:
+- [Business Discovery](./01-business-discovery.md)
+- [Review Monitoring](./02-review-monitoring.md)
+- [Company Enrichment](./03-company-enrichment.md)
+- [Contact Discovery](./04-contact-discovery.md)
+- [AI Scraper Company Profile](./05-ai-scraper-company-profile.md)
+- [Async Research Workflow](./06-async-research-workflow.md)
+- [Competitor Landscape](./07-competitor-landscape.md)
+- [Market Entry Scouting](./08-market-entry-scouting.md)
+- [Example Agent Skills](./skills/README.md)
 
-- [skills/README.md](./skills/README.md)
-
-## How To Read These Examples
-
-Each example includes:
-
-- a real business use case
-- a natural-language prompt for an MCP-capable assistant
-- the recommended Outscraper tool or tool sequence
-- sample arguments you can adapt
-
-## Common Patterns
-
-### 1. Discovery
-
-Use:
-
-- `google_maps_search` for ad hoc place discovery
-- `businesses_search` for structured business filtering
-
-### 2. Enrichment
-
-Use:
-
-- `company_insights` for firmographics
-- `emails_and_contacts` for contact discovery
-- `ai_scraper` for one-page structured extraction
-
-### 3. Reviews and Media
-
-Use:
-
-- `google_maps_reviews`
-- `google_maps_photos`
-- `booking_reviews`
-- `tripadvisor_reviews`
-- `yelp_reviews`
-
-### 4. Async Workflows
-
-Use:
-
-- `execution_mode: "async"` when a task may be long-running
-- `requests_get` to poll by `request_id`
-- `requests_list` and `requests_delete` for async job management
+JSON blocks contain MCP tool arguments, not REST request bodies. Replace placeholders with values returned by earlier steps. Never invent record IDs, service IDs or schema versions.

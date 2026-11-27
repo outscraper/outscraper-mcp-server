@@ -1,30 +1,18 @@
 # Review Monitoring
 
-## Use Case
+Prompt: "Fetch up to 50 recent Google reviews for this place and summarize recurring praise, complaints and action items. Explain pricing before starting."
 
-Track recent reviews for a hospitality business and surface themes from the newest feedback.
-
-## Natural-Language Prompt
-
-Fetch the newest 50 Google reviews for this place and summarize recurring praise, complaints, and quick action items.
-
-## Recommended Tool
-
-- `google_maps_reviews`
-
-## Example Arguments
+Follow the [paid-service workflow](./README.md#before-paid-work). Use the actual place ID supplied by the user or returned by place discovery. Call the advertised `google_maps_reviews` tool with:
 
 ```json
 {
-  "query": ["ChIJrc9T9fpYwokRdvjYRHT8nI4"],
+  "query": ["<actual place ID>"],
   "reviews_limit": 50,
   "sort": "newest",
-  "language": "en",
-  "execution_mode": "sync"
+  "language": "en"
 }
 ```
 
-## Useful Follow-Up
+Read the returned request `id` with `requests_get`. Fewer reviews may be returned; report the observed count and period covered.
 
-- use `cutoff` or `start` for rolling monitoring windows
-- use `reviews_query` if you want reviews mentioning a topic like service, price, or wait time
+For rolling monitoring, inspect the current `start`, `cutoff` and `reviews_query` semantics before adding filters. Timestamp filters use Unix seconds and can affect sorting. Do not apply filters that the user did not request.

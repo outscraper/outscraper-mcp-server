@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Forward tool discovery and calls to Rashida's API-key MCP endpoint so Node uses
+  the same tool names, descriptions, schemas, annotations, pricing and results.
+- Replace the separate REST tool catalog and result envelope with the backend's
+  current catalog and asynchronous service workflow. Refresh cached tool lists
+  and update saved workflows to use current schemas, including `requests_get.id`.
+- Keep stdio configuration, hosted API-key headers, `/mcp`, `/v1/mcp/<API_KEY>`
+  and optional stateful HTTP connections. Public legacy paths still need proxy
+  routing to a running Node bridge.
+- Update examples to use free catalog previews, live pricing, service discovery
+  and bounded result polling.
+- Point the registry's remote entry to the canonical OAuth MCP endpoint; local
+  Node connections continue to use API keys.
+
+### Fixed
+
+- Bind hosted stateful sessions to their API key across POST, GET and DELETE.
+- Keep credentials out of upstream error output and retain retry guidance when
+  a response times out. Requests are never automatically resubmitted.
+- Restore missing platform dependency entries in the lockfile so clean installs
+  work without changing dependency versions.
+
+### Deployment
+
+- Deploy Rashida's `/mcp/<API_KEY>` endpoint first. No legacy REST fallback is
+  provided. Redact credential-bearing URLs at every proxy and logging layer.
+
 ## 0.2.5
 
 ### Fixed

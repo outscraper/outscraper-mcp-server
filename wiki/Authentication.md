@@ -1,45 +1,24 @@
 # Authentication
 
-## Local stdio Mode
+## Local stdio and Private HTTP
 
-Pass the API key through environment variables:
+Set `OUTSCRAPER_API_KEY` in the client's private environment or local `.env`. With `CLOUD_SERVICE=false`, HTTP callers also use that configured key; keep that mode private because all callers use the same account.
 
-- `OUTSCRAPER_API_KEY`
+## Hosted HTTP
 
-Example:
+Set `CLOUD_SERVICE=true`. Each request must provide a key using one of:
 
-```json
-{
-  "mcpServers": {
-    "outscraper": {
-      "command": "npx",
-      "args": ["-y", "outscraper-mcp"],
-      "env": {
-        "OUTSCRAPER_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
+- `X-OUTSCRAPER-API-KEY: <API_KEY>`
+- `X-API-KEY: <API_KEY>`
+- `Authorization: Bearer <API_KEY>`
+- `/v1/mcp/<API_KEY>` in the URL path
 
-## Hosted HTTP Mode
+Headers take precedence over the path key. The configured environment key is not a fallback in hosted mode. Send the same key on every request in a stateful session.
 
-Enable:
+Node checks for supplied credentials; the upstream keyed MCP endpoint validates the account and its organization when processing tool requests. The API host determines the organization. Using a service-capable Node process does not bypass Targetron's catalog-only restriction.
 
-```bash
-set CLOUD_SERVICE=true
-```
+## Upstream Authentication
 
-Then provide the API key via one of these headers:
+The bridge forwards tool requests to the configured API origin's `/mcp/<API_KEY>` endpoint. The main API's plain `/mcp` endpoint is OAuth-only; Node's support for API-key headers must not be confused with accepting API keys as OAuth tokens there.
 
-- `Authorization: Bearer <api-key>`
-- `X-API-KEY: <api-key>`
-- `X-OUTSCRAPER-API-KEY: <api-key>`
-
-Requests without one of these auth forms are rejected before MCP processing begins.
-
-## Notes
-
-- In local stdio mode, environment-based auth is expected.
-- In hosted HTTP mode with `CLOUD_SERVICE=true`, request headers are used.
-- Rotate exposed API keys if they have been shared or logged accidentally.
+Treat key-bearing URLs as credentials. Use HTTPS for public connections and redact keys from access logs, errors and tracing on every proxy and API layer. Even when the caller uses a header to Node, the bridge's upstream URL contains the key. Rotate exposed keys and never put real credentials in examples or support messages.

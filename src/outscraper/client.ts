@@ -1,242 +1,88 @@
-import { removeEmpty } from "../lib/json.js";
-import type {
-  AiScraperPayload,
-  AsyncResponse,
-  BusinessesGetParams,
-  BusinessesSearchPayload,
-  BookingReviewsParams,
-  CompanyInsightsParams,
-  EmailValidatorParams,
-  EmailsAndContactsParams,
-  GoogleMapsPhotosParams,
-  GoogleMapsReviewsParams,
-  GoogleMapsSearchParams,
-  GoogleSearchImagesParams,
-  GoogleSearchParams,
-  IndeedSearchParams,
-  PhonesEnricherParams,
-  TripadvisorReviewsParams,
-  TripadvisorSearchParams,
-  TrustpilotDataParams,
-  TrustpilotReviewsParams,
-  YellowpagesSearchParams,
-  YelpReviewsParams,
-} from "./types.js";
+import {
+  ErrorCode,
+  JSONRPCErrorSchema,
+  JSONRPCResponseSchema,
+  McpError,
+  type Result,
+} from "@modelcontextprotocol/sdk/types.js";
 
-export class OutscraperApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-    readonly payload: unknown,
-  ) {
-    super(message);
-    this.name = "OutscraperApiError";
-  }
-}
+const REQUEST_TIMEOUT_MS = 120_000;
+const PROTOCOL_VERSION = "2025-03-26";
 
-export class OutscraperClient {
-  constructor(
-    private readonly apiKey: string,
-    private readonly apiBaseUrl: string,
-  ) {}
+export class OutscraperMcpClient {
+  private readonly url: URL;
 
-  async aiScraper(payload: AiScraperPayload): Promise<unknown> {
-    return this.post("/ai-scraper", payload);
-  }
-
-  async businessesSearch(payload: BusinessesSearchPayload): Promise<unknown> {
-    return this.post("/businesses", payload);
-  }
-
-  async businessesGet(
-    businessId: string,
-    params: BusinessesGetParams,
-  ): Promise<unknown> {
-    return this.get(`/businesses/${encodeURIComponent(businessId)}`, params);
-  }
-
-  async getRequestArchive(requestId: string): Promise<AsyncResponse> {
-    return this.get(`/requests/${encodeURIComponent(requestId)}`);
-  }
-
-  async deleteRequestArchive(requestId: string): Promise<unknown> {
-    return this.delete(`/requests/${encodeURIComponent(requestId)}`);
-  }
-
-  async getRequestsHistory(type?: string): Promise<unknown> {
-    return this.get("/requests", removeEmpty({ type }));
-  }
-
-  async getProfileBalance(): Promise<unknown> {
-    return this.get("/profile/balance");
-  }
-
-  async googleMapsSearch(params: GoogleMapsSearchParams): Promise<unknown> {
-    return this.get("/google-maps-search", params);
-  }
-
-  async googleMapsReviews(params: GoogleMapsReviewsParams): Promise<unknown> {
-    return this.get("/google-maps-reviews", params);
-  }
-
-  async companyInsights(params: CompanyInsightsParams): Promise<unknown> {
-    return this.get("/company-insights", params);
-  }
-
-  async emailsAndContacts(params: EmailsAndContactsParams): Promise<unknown> {
-    return this.get("/emails-and-contacts", params);
-  }
-
-  async emailValidator(params: EmailValidatorParams): Promise<unknown> {
-    return this.get("/email-validator", params);
-  }
-
-  async googleMapsPhotos(params: GoogleMapsPhotosParams): Promise<unknown> {
-    return this.get("/google-maps-photos", params);
-  }
-
-  async yellowpagesSearch(params: YellowpagesSearchParams): Promise<unknown> {
-    return this.get("/yellowpages-search", params);
-  }
-
-  async bookingReviews(params: BookingReviewsParams): Promise<unknown> {
-    return this.get("/booking-reviews", params);
-  }
-
-  async phonesEnricher(params: PhonesEnricherParams): Promise<unknown> {
-    return this.get("/phones-enricher", params);
-  }
-
-  async yelpReviews(params: YelpReviewsParams): Promise<unknown> {
-    return this.get("/yelp-reviews", params);
-  }
-
-  async tripadvisorReviews(params: TripadvisorReviewsParams): Promise<unknown> {
-    return this.get("/tripadvisor-reviews", params);
-  }
-
-  async tripadvisorSearch(params: TripadvisorSearchParams): Promise<unknown> {
-    const { searchType, ...rest } = params;
-    return this.get("/tripadvisor-search", {
-      ...rest,
-      ...(searchType !== undefined ? { SearchType: searchType } : {}),
-    });
-  }
-
-  async googleSearch(params: GoogleSearchParams): Promise<unknown> {
-    return this.get("/google-search", params);
-  }
-
-  async googleSearchImages(params: GoogleSearchImagesParams): Promise<unknown> {
-    return this.get("/google-search-images", params);
-  }
-
-  async indeedSearch(params: IndeedSearchParams): Promise<unknown> {
-    return this.get("/indeed-search", params);
-  }
-
-  async trustpilotData(params: TrustpilotDataParams): Promise<unknown> {
-    return this.get("/trustpilot", params);
-  }
-
-  async trustpilotReviews(params: TrustpilotReviewsParams): Promise<unknown> {
-    return this.get("/trustpilot-reviews", params);
-  }
-
-  private async get(path: string, params?: object): Promise<any> {
-    const url = new URL(path, this.apiBaseUrl);
-
-    if (params) {
-      for (const [key, rawValue] of Object.entries(removeEmpty(params))) {
-        if (Array.isArray(rawValue)) {
-          for (const item of rawValue) {
-            url.searchParams.append(key, String(item));
-          }
-        } else {
-          url.searchParams.set(key, String(rawValue));
-        }
+  constructor(private readonly apiKey: string, baseUrl: string) {
+    try {
+      const url = new URL(baseUrl);
+      if (!["https:", "http:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
+        throw new Error();
       }
+      url.pathname = `${url.pathname.replace(/\/+$/, "")}/mcp/${encodeURIComponent(apiKey)}`;
+      this.url = url;
+    } catch {
+      throw new McpError(ErrorCode.InternalError, "Invalid OUTSCRAPER_API_BASE_URL; use the API base URL without credentials, query parameters or a fragment.");
     }
-
-    return this.request(url, { method: "GET" });
   }
 
-  private async post(path: string, payload?: object): Promise<any> {
-    const url = new URL(path, this.apiBaseUrl);
-
-    return this.request(url, {
-      method: "POST",
-      body: JSON.stringify(removeEmpty(payload ?? {})),
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-  }
-
-  private async delete(path: string): Promise<any> {
-    const url = new URL(path, this.apiBaseUrl);
-
-    return this.request(url, { method: "DELETE" });
-  }
-
-  private static readonly REQUEST_TIMEOUT_MS = 120_000;
-
-  private async request(url: URL, init: RequestInit): Promise<any> {
+  async request<T extends Result>(
+    method: "tools/list" | "tools/call",
+    params?: object,
+    signal?: AbortSignal,
+  ): Promise<T> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), OutscraperClient.REQUEST_TIMEOUT_MS);
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) abort();
+    const timeout = setTimeout(abort, REQUEST_TIMEOUT_MS);
 
     try {
-      const response = await fetch(url, {
-        ...init,
-        signal: controller.signal,
+      // Rashida is stateless. Never retry a request that may have started paid work.
+      const response = await fetch(this.url, {
+        method: "POST",
         headers: {
-          "x-api-key": this.apiKey,
-          client: "outscraper-mcp",
-          ...(init.headers ?? {}),
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+          "MCP-Protocol-Version": PROTOCOL_VERSION,
         },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, ...(params ? { params } : {}) }),
+        redirect: "error",
+        signal: controller.signal,
       });
-
-      const text = await response.text();
-      const payload = text ? safeJsonParse(text) : null;
-
-      if (!response.ok) {
-        const message =
-          getErrorMessage(payload) ||
-          `Outscraper API request failed with status ${response.status}`;
-
-        throw new OutscraperApiError(message, response.status, payload);
+      const payload: unknown = await response.json().catch((error: unknown) => {
+        if (error instanceof SyntaxError) return undefined;
+        throw error;
+      });
+      const rpcError = JSONRPCErrorSchema.safeParse(payload);
+      if (rpcError.success && rpcError.data.id === 1) {
+        const error = this.redactError(rpcError.data.error);
+        throw new McpError(error.code, error.message, error.data);
       }
-
-      return payload;
+      if (!response.ok) {
+        const hint = response.status === 404 ? " Deploy the Rashida API-key MCP endpoint before using this bridge." : "";
+        throw new McpError(ErrorCode.InternalError, `Upstream MCP returned HTTP ${response.status}.${hint}`);
+      }
+      const result = JSONRPCResponseSchema.safeParse(payload);
+      if (!result.success || result.data.id !== 1 || !("result" in result.data)) {
+        throw new McpError(ErrorCode.InternalError, "Upstream MCP returned an invalid JSON-RPC response.");
+      }
+      return result.data.result as T;
+    } catch (error) {
+      if (error instanceof McpError) throw error;
+      // Fetch errors can include the credential-bearing URL. Do not expose them.
+      const reason = controller.signal.aborted ? "was cancelled or timed out" : "failed";
+      throw new McpError(ErrorCode.InternalError, `Upstream MCP request ${reason}. For a submitted service, check request history before retrying; stopping this wait does not cancel the service.`);
     } finally {
-      clearTimeout(timeoutId);
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", abort);
     }
   }
-}
 
-function safeJsonParse(value: string): unknown {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return value;
+  private redactError<T extends object>(error: T): T {
+    // Preserve validation details, but never echo the API key in protocol errors.
+    const text = JSON.stringify(error)
+      .replaceAll(JSON.stringify(this.apiKey).slice(1, -1), "[redacted]")
+      .replaceAll(encodeURIComponent(this.apiKey), "[redacted]");
+    return JSON.parse(text) as T;
   }
-}
-
-function getErrorMessage(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") {
-    return undefined;
-  }
-
-  const error = (payload as Record<string, unknown>).error;
-  const errorMessage = (payload as Record<string, unknown>).errorMessage;
-
-  if (typeof errorMessage === "string" && errorMessage.length > 0) {
-    return errorMessage;
-  }
-
-  if (typeof error === "string" && error.length > 0) {
-    return error;
-  }
-
-  return undefined;
 }

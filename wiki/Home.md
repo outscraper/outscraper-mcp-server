@@ -1,58 +1,20 @@
 # Outscraper MCP Server
 
-Official MCP server for Outscraper.
+Official Node MCP bridge for Outscraper. It exposes the same current tool names, descriptions, schemas and results as the main Outscraper MCP backend through stdio or Streamable HTTP.
 
-It provides MCP tools for:
-
-- business discovery
-- Google Maps places, reviews, photos, and chain detection
-- company insights
-- emails and contacts
-- email validation and phone enrichment
-- Google Search and Google Images search
-- Yellow Pages, Booking, Yelp, Tripadvisor, Trustpilot, and Indeed data
-- account balance checks
-- async request lifecycle management
+Business catalog, pricing, scraping, enrichment and asynchronous request workflows are supplied by the connected backend. Targetron remains limited to catalog, catalog pricing and balance. There is no separate Node service registry to maintain.
 
 ## Quick Start
 
-Run from npm:
+Configure a local MCP process using `npx`, arguments `["-y", "outscraper-mcp"]`, and the private environment variable `OUTSCRAPER_API_KEY`. The default upstream API origin is `https://api.outscraper.com`; its `/mcp/<API_KEY>` endpoint must be deployed first.
 
-```bash
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
-```
-
-Typical MCP client configuration:
-
-```json
-{
-  "mcpServers": {
-    "outscraper": {
-      "command": "npx",
-      "args": ["-y", "outscraper-mcp"],
-      "env": {
-        "OUTSCRAPER_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-## Main Capabilities
-
-- `stdio` transport for MCP desktop and editor clients
-- Streamable HTTP mode
-- Stateful HTTP/SSE mode
-- `execution_mode` support for sync, async, and auto
-- normalized `structuredContent` tool responses
-- hosted header-based auth mode
+For clients supporting remote HTTP directly, use OAuth at `https://api.outscraper.com/mcp` or the API-key URL `https://api.outscraper.com/mcp/<API_KEY>`. Keep actual keys private. See the [setup website](https://mcp.outscraper.com/) for connection guidance.
 
 ## Pages
 
 - [Installation](Installation)
 - [Tools](Tools)
-- [Execution Modes](Execution-Modes)
+- [Execution Workflow](Execution-Modes)
 - [HTTP Deployment](HTTP-Deployment)
 - [Authentication](Authentication)
 - [Known Limitations](Known-Limitations)

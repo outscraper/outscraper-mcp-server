@@ -1,13 +1,13 @@
 # Outscraper MCP
 
-Official Docker image for the Outscraper MCP server.
+Official Docker image for the Node bridge to the main Outscraper MCP backend. Tool names, descriptions, schemas and results come from the configured Rashida deployment.
 
 Use this image to expose Outscraper as a hosted MCP endpoint for:
 
 - business discovery and lead generation
 - Google Maps intelligence, including places, reviews, and photos
 - company insights and contact enrichment
-- AI-assisted structured extraction from a single page with `ai_scraper`
+- AI-assisted structured extraction through service discovery
 - async job submission and polling with `requests_get`
 
 ## Why Use This Image
@@ -17,6 +17,10 @@ This image is useful when you want to:
 - connect hosted MCP clients over HTTP
 - use URL-based auth for connector-style workflows
 - deploy with Docker or Docker Compose instead of `npx`
+
+## Deployment Prerequisite
+
+The configured API origin must support `/mcp/<API_KEY>` before deploying this image. The default is `https://api.outscraper.com`. There is no fallback to the former REST adapters. The API host and supplied key must belong to the same organization; Targetron remains catalog-only.
 
 ## Quick Start
 
@@ -74,7 +78,7 @@ Default behavior:
 - `PORT=3000`
 - `OUTSCRAPER_API_BASE_URL=https://api.outscraper.com`
 
-## ChatGPT Connector Style URL
+## URL-Auth Connection
 
 If you are connecting from a hosted MCP connector that cannot set custom headers, use:
 
@@ -86,4 +90,7 @@ https://your-domain.example/v1/mcp/YOUR_API_KEY
 
 - This image is intended for hosted MCP usage over HTTP.
 - Local IDE and desktop MCP clients usually work better with stdio mode via `npx`.
-- URL-auth is less private than header auth because URLs are more likely to appear in logs.
+- Redact key-bearing paths from access, error and tracing logs on every proxy/API layer. Even when callers use header auth to Node, the upstream MCP request uses a key in its URL.
+- `/health` checks the Node process only; verify authenticated upstream tool discovery separately.
+- To retain an old public `/v1/mcp/<API_KEY>` address, route that path to a running Node container. Updating the image does not change DNS or restore a retired route.
+- Refresh client tool definitions after upgrading. The current tools use asynchronous service submission and `requests_get` with `id`; results follow the backend MCP content rather than the old Node envelope.

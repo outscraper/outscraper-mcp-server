@@ -1,31 +1,37 @@
 # Business Discovery
 
-## Use Case
+Find bars in Kyiv for partnerships or local market research. Decide whether the task needs a stored catalog preview or fresh Google Maps extraction.
 
-Find high-quality bars in Kyiv for outreach, partnerships, or local market research.
+## Free Catalog Preview
 
-## Natural-Language Prompt
+Call `search_businesses`:
 
-Find 20 bars in Kyiv with strong ratings and reviews. Return the name, address, phone, website, rating, and reviews count.
+```json
+{
+  "filters": {
+    "country_code": "UA",
+    "cities": ["kyiv"],
+    "types": ["bar"]
+  },
+  "limit": 5
+}
+```
 
-## Recommended Tool
+Preserve masked fields. If the user wants full catalog records, price `search_businesses_full`, obtain authorization and select actual returned IDs with `filters.os_ids`. Catalog lookup is not a fresh scrape.
 
-- `google_maps_search`
+## Google Maps Extraction
 
-## Example Arguments
+Prompt: "Find up to 20 bars in Kyiv, then summarize their ratings and review counts. Explain pricing before starting."
+
+Follow the [paid-service workflow](./README.md#before-paid-work). For an advertised `google_maps_search` direct tool, use:
 
 ```json
 {
   "query": ["bars kyiv ukraine"],
   "limit": 20,
   "language": "en",
-  "region": "ua",
-  "fields": ["name", "full_address", "phone", "site", "rating", "reviews"],
-  "execution_mode": "sync"
+  "region": "ua"
 }
 ```
 
-## When To Use Another Tool
-
-- use `businesses_search` instead if you need structured geography and category filters
-- use `google_maps_reviews` after discovery if you need sentiment or review text
+The limit applies per query. Submission returns a request `id`; read the results with `requests_get`. Add rating or review requirements only when requested, and do not claim this small sample covers the entire market.

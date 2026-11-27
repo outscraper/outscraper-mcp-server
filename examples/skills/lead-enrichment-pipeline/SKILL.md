@@ -1,92 +1,30 @@
 ---
 name: lead-enrichment-pipeline
-description: Run a lead research and enrichment pipeline across several Outscraper MCP tools. Use when an agent needs to discover a company or business, enrich it with company metadata, find emails or contacts, and optionally extract structured messaging from a website for outbound sales, GTM research, or account planning.
+description: Build an authorized business research brief using Outscraper catalog discovery, company data and contact enrichment with live pricing and asynchronous result reads.
 ---
 
 # Lead Enrichment Pipeline
 
-Use this skill when the goal is not just to find a company, but to turn it into an actionable research record.
+Use this workflow for company research or account planning. Follow the user's task and existing authorization; do not add paid enrichment merely because it is available.
 
 ## Workflow
 
-1. Discover the target using `businesses_search` or `google_maps_search`.
-2. Enrich known domains with `company_insights`.
-3. Find reachable contacts with `emails_and_contacts`.
-4. If positioning or product messaging matters, use `ai_scraper` on the company homepage.
-5. Return one concise account summary rather than separate tool dumps.
+1. Inspect the connected tools. For geography/category requests, begin with a small `search_businesses` masked preview. If the user already provided domains, skip discovery.
+2. If full catalog records are needed, price `search_businesses_full` and requested catalog enrichments. Obtain approval or use the agreed scope and budget. Select actual returned catalog IDs with `filters.os_ids`; never infer masked contact details.
+3. For standalone domain research, discover and inspect `company_insights` or `emails_and_contacts`. Price each requested service using its returned billing units before execution.
+4. Submit once through an advertised direct tool or `run_service` with the current schema version. Save each returned `id` and read results with `requests_get` using bounded polling and pagination.
+5. If website messaging is part of the task, discover `ai_scraper`, inspect its schema and price that additional step before running it.
+6. Combine returned evidence into one account brief with company facts, contact availability, source claims and data limitations.
 
-## Routing Guide
-
-- If the user starts with a domain, skip discovery and go straight to enrichment.
-- If the user starts with a geography plus business type, begin with place or business discovery.
-- If the user wants outreach angles, include `ai_scraper`.
-
-## Tool Sequence
-
-### Discovery
-
-Use one of:
-
-- `businesses_search`
-- `google_maps_search`
-
-### Company Enrichment
-
-Use `company_insights`.
+An advertised `emails_and_contacts` tool accepts, after pricing and authorization:
 
 ```json
 {
   "query": ["outscraper.com"],
-  "fields": ["name", "description", "industry", "employees", "location"],
-  "execution_mode": "sync"
+  "preferred_contacts": ["technical", "decision makers"]
 }
 ```
 
-### Contact Discovery
+Contact availability is not proof of deliverability. Service result counts and enrichment billing units may differ from input counts. Estimates do not enforce a spending cap. Never retry a paid submission automatically after an ambiguous failure.
 
-Use `emails_and_contacts`.
-
-```json
-{
-  "query": ["outscraper.com"],
-  "preferred_contacts": ["technical", "decision makers"],
-  "execution_mode": "sync"
-}
-```
-
-### Structured Homepage Extraction
-
-Use `ai_scraper`.
-
-```json
-{
-  "query": "https://outscraper.com",
-  "prompt": "Extract company name, core product description, ideal customer types, and notable claims.",
-  "schema": {
-    "type": "object",
-    "required": [],
-    "properties": {
-      "company_name": { "type": "string" },
-      "product_summary": { "type": "string" },
-      "ideal_customers": {
-        "type": "array",
-        "items": { "type": "string" }
-      },
-      "notable_claims": {
-        "type": "array",
-        "items": { "type": "string" }
-      }
-    }
-  },
-  "execution_mode": "sync"
-}
-```
-
-## Output Style
-
-Return one account brief with:
-
-- company snapshot
-- contacts found
-- product positioning
-- recommended next step for outreach or research
+Targetron exposes catalog, catalog pricing and balance only. Use supported catalog enrichments there when authorized; do not attempt service discovery or scraping through that endpoint.

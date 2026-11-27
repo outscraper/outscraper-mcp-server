@@ -1,130 +1,40 @@
 # Tools
 
-## Business Tools
+The Node bridge returns tool definitions from the configured Rashida MCP deployment. Names, descriptions, input schemas, annotations and result content are shared with that backend. Inspect `tools/list` after connecting; do not rely on a fixed local catalog.
 
-### `businesses_search`
+## Business Catalog
 
-Use for structured business discovery with filters and pagination.
+- `search`: natural-language discovery with a small result set.
+- `fetch`: masked preview of one returned business ID.
+- `search_businesses`: structured filters, masked previews and cursor pagination.
+- `search_businesses_full`: paid full records and requested catalog enrichments.
 
-### `businesses_get`
+Start with a small preview unless paid retrieval is already authorized. Masked fields remain masked after sign-in. Catalog reads are not fresh scraping requests.
 
-Use when you already have a business ID.
+## Pricing and Account
 
-## Google Maps Tools
+- `pricing_get`: current organization/account rates, recorded allowances and optional estimates.
+- `balance_get`: account billing data and the billing-dashboard link.
 
-### `google_maps_search`
+Check pricing before paid work. Do not assume fixed free allowances or treat estimates as enforced spending caps.
 
-Search for places and place data from Google Maps.
+## Services
 
-### `google_maps_reviews`
+- `discover_services`: compact discovery across all enabled services, including upfront tools.
+- `get_service_schema`: one service's parameters and current schema version.
+- `run_service`: asynchronous execution using that version and its parameters.
 
-Fetch reviews for Google Maps places.
+Common services also appear as direct tools. They use the same parameters and paid-use rules. New services and priority changes are controlled by the backend, so a service need not be listed upfront to be discoverable and runnable.
 
-### `google_maps_photos`
+## Requests
 
-Fetch photos for places, including menu, latest, and owner-tagged photos.
+- `requests_get`: read status and paginated results using the returned request `id`.
+- `requests_list`: account history using `type` (`running` or `finished`), `skip` and `limit`.
 
-### `chain_info`
+Result pages preserve indexes and can contain JSON-text fragments. Follow the live descriptions and [Execution Workflow](Execution-Modes). There is no cancellation or request-deletion tool in the current contract.
 
-Returns chain detection data using the documented chain enrichment on top of Google Maps search.
+## Organizations and Results
 
-## Company and Contact Tools
+Targetron exposes only catalog, catalog pricing and balance. Other organizations receive the capabilities enabled by their backend policy. API keys must match the chosen API host's organization.
 
-### `company_insights`
-
-Firmographic and company profile enrichment.
-
-### `emails_and_contacts`
-
-Find emails, contacts, socials, and related company contact data.
-
-### `emails_validator`
-
-Validate whether email addresses are deliverable.
-
-### `phones_enricher`
-
-Validate and enrich phone numbers.
-
-## Search Tools
-
-### `google_search`
-
-Fetch Google web search results.
-
-### `google_search_images`
-
-Fetch Google image search results.
-
-### `yellowpages_search`
-
-Search Yellow Pages business listings.
-
-### `indeed_search`
-
-Fetch job listings from Indeed.
-
-### `tripadvisor_search`
-
-Search Tripadvisor results.
-
-## Review and Directory Tools
-
-### `booking_reviews`
-
-Fetch Booking.com reviews.
-
-### `yelp_reviews`
-
-Fetch Yelp reviews.
-
-### `tripadvisor_reviews`
-
-Fetch Tripadvisor reviews.
-
-### `tp_data`
-
-Fetch Trustpilot business data.
-
-### `tp_reviews`
-
-Fetch Trustpilot reviews.
-
-## Account and Request Tools
-
-### `balance_get`
-
-Returns account balance and status.
-
-### `requests_list`
-
-List async requests.
-
-### `requests_get`
-
-Get the status and archive for a request.
-
-### `requests_delete`
-
-Terminate a request.
-
-## Response Shape
-
-All tools return a normalized result envelope:
-
-```json
-{
-  "data": {},
-  "meta": {
-    "service": "service_name",
-    "operation": "operation_name"
-  },
-  "async": {
-    "id": "request-id",
-    "status": "Pending",
-    "results_location": "https://api.outscraper.com/requests/request-id",
-    "is_async_submission": true,
-    "next_step": "Call requests_get with request_id=\"request-id\" to check progress."
-  }
-}
-```
+Results retain the backend's MCP content and errors. Node does not add its previous `data`, `meta` or `async` envelope. Refresh cached tools and update fixed workflows after migrating from an older Node release.

@@ -1,38 +1,19 @@
 # Adding New Services
 
-This project uses a modular structure for MCP tools.
+Service definitions and behavior belong in Rashida. The Node package forwards its current tool list and calls, so adding a backend service does not require a Node module, copied schema or REST adapter.
 
 ## Standard Flow
 
-1. Add the endpoint method in `src/outscraper/client.ts`.
-2. Add or extend request types in `src/outscraper/types.ts`.
-3. Create a new module in `src/services/<service-name>/service.ts`.
-4. Register the module in `src/server.ts`.
-5. Update `README.md`.
-6. Update metadata if needed.
+1. Add or update the reviewed service registry entry and backend adapter in Rashida using its existing MCP service workflow.
+2. Verify the public parameters, worker mapping, billing identity, async execution and organization boundaries in backend tests.
+3. Decide whether it is an upfront tool or discovery-only; both remain discoverable through the backend.
+4. Deploy the backend change and refresh the MCP client's tools.
+5. Compare tool discovery and an authorized call through Node with the direct keyed MCP endpoint. Check pricing and paginated results where applicable.
 
-## Guidelines
+Targetron's catalog-only restriction is enforced by the backend. Do not add a local exception or a second Node allowlist.
 
-- keep tool names short and domain-oriented
-- follow documented Outscraper endpoint behavior
-- use the shared MCP result envelope
-- support `execution_mode` for async-capable tools
-- keep docs product-facing
-- document enrichments as enrichments, not standalone endpoints
+## Bridge Changes
 
-## Validation
+Change this repository only when forwarding, authentication, transport or package behavior needs an update. Preserve schemas and results rather than normalizing them. Keep tests for unknown future tools so new backend services remain callable without a Node release.
 
-Before merging:
-
-```bash
-npm run build
-npm run check
-npm pack --dry-run
-```
-
-If the new service touches live behavior:
-
-1. confirm the tool appears in `listTools`
-2. call it through the running MCP server
-3. verify at least one realistic request
-4. re-check public docs
+Run `npm run check`, `npm test` and `npm run build` for bridge changes. Update task examples when they would otherwise teach stale names or arguments.

@@ -3,7 +3,7 @@
 - [Home](Home)
 - [Installation](Installation)
 - [Tools](Tools)
-- [Execution Modes](Execution-Modes)
+- [Execution Workflow](Execution-Modes)
 - [HTTP Deployment](HTTP-Deployment)
 - [Authentication](Authentication)
 - [Known Limitations](Known-Limitations)

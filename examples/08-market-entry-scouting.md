@@ -1,45 +1,36 @@
 # Market Entry Scouting
 
-## Use Case
+Prompt: "Find cafes in Warsaw with at least 200 reviews, then assess a small shortlist's customer feedback. Explain pricing before paid retrieval."
 
-Evaluate a new city or region by combining place discovery, ratings, and review volume.
+## Preview the Catalog
 
-## Natural-Language Prompt
-
-Find the top-rated cafes in Warsaw with at least 200 reviews, then identify patterns in customer expectations and market density.
-
-## Recommended Tool Sequence
-
-- `google_maps_search`
-- `google_maps_reviews`
-
-## Step 1. Discover Businesses
+Call `search_businesses`:
 
 ```json
 {
-  "query": ["cafes warsaw poland"],
-  "limit": 25,
-  "language": "en",
-  "region": "pl",
-  "fields": ["name", "full_address", "rating", "reviews", "place_id"],
-  "execution_mode": "sync"
+  "filters": {
+    "country_code": "PL",
+    "cities": ["warsaw"],
+    "types": ["cafe"],
+    "reviews": "200+"
+  },
+  "limit": 5
 }
 ```
 
-## Step 2. Review Selected Places
+Inspect masked previews with the user. Full catalog retrieval requires its own pricing lookup and authorization. A limited catalog sample does not establish market density or an exhaustive ranking.
+
+## Collect Review Evidence
+
+On a service-capable organization, follow the [paid-service workflow](./README.md#before-paid-work) for `google_maps_reviews`. Use actual Google place IDs supplied by the user or available in authorized full results; an Outscraper catalog ID is not a Google place ID.
 
 ```json
 {
-  "query": ["PLACE_ID_1", "PLACE_ID_2"],
+  "query": ["<actual Google place ID>"],
   "reviews_limit": 40,
   "sort": "most_relevant",
-  "language": "en",
-  "execution_mode": "sync"
+  "language": "en"
 }
 ```
 
-## Why This Is Useful
-
-- place discovery shows market supply
-- ratings and review counts show relative quality and visibility
-- review text helps surface unmet demand and service expectations
+Read the submitted request with `requests_get`. Describe review themes and sampling limits. Targetron supports the catalog steps only; report that limitation rather than attempting scraping through its endpoint.

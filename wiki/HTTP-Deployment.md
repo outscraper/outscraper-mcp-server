@@ -1,95 +1,43 @@
 # HTTP Deployment
 
-The server supports:
+The Node application retains stateless and stateful Streamable HTTP, including the legacy `/v1/mcp/<API_KEY>` path. It forwards tool discovery and calls to Rashida's keyed MCP endpoint.
 
-- Streamable HTTP
-- Stateful HTTP/SSE
-- header-based hosted auth
-- URL-based hosted auth through `/v1/mcp/<api-key>`
+## Prerequisite
 
-## Streamable HTTP
+Deploy `/mcp/<API_KEY>` on the configured API origin first. Verify authenticated tool discovery there. There is no fallback to the previous REST adapters.
 
-Start:
+## Stateless Hosted Server
 
-```bash
-set HTTP_STREAMABLE_SERVER=true
-set HOST=localhost
-set PORT=3000
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
-```
-
-Endpoints:
-
-- `http://localhost:3000/mcp`
-- `http://localhost:3000/v1/mcp/YOUR_API_KEY`
-- `http://localhost:3000/health`
-
-## Stateful HTTP/SSE
-
-Start:
+After building from source:
 
 ```bash
-set SSE_LOCAL=true
-set HOST=localhost
-set PORT=3000
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
+CLOUD_SERVICE=true HTTP_STREAMABLE_SERVER=true HOST=127.0.0.1 PORT=3000 npm start
 ```
 
-Or:
+Configure a public HTTPS reverse proxy in front of the process. Supported routes:
 
-```bash
-set HTTP_STATEFUL_SERVER=true
-set HOST=localhost
-set PORT=3000
-set OUTSCRAPER_API_KEY=YOUR_API_KEY
-npx -y outscraper-mcp
-```
+- `POST /mcp` with API-key header authentication
+- `POST /v1/mcp/<API_KEY>` with path authentication
+- `GET /health` for process health only
 
-Session endpoints:
+Stateless MCP GET and DELETE requests return 405. A trailing slash on the key path is supported.
 
-- `POST /mcp`
-- `GET /mcp`
-- `DELETE /mcp`
+## Stateful Server
 
-The server tracks session state via the `mcp-session-id` header.
+Use `HTTP_STATEFUL_SERVER=true` instead of the stateless flag. `SSE_LOCAL=true` is a deprecated alias; it does not expose a legacy SSE endpoint. The same MCP paths support POST, GET and DELETE with the `mcp-session-id` header. Send the same credentials on each request. A terminated session cannot be reused.
 
-The same stateful routes are also available behind:
+## Preserve an Existing Public Address
 
-- `http://localhost:3000/v1/mcp/YOUR_API_KEY`
+To retain `https://mcp.outscraper.com/v1/mcp/<API_KEY>`, route that path to the Node bridge. The host's root can serve the setup website independently. Installing this version does not change DNS or proxy routing, and protocol POST requests should not be redirected through the website.
 
-## Health Check
+Preserve required transport headers and disable response buffering where needed for Streamable HTTP. Redact key-bearing paths from access, error and tracing logs on both the public route and upstream API. Test the actual public connection before notifying existing users.
 
-Use:
-
-```text
-GET /health
-```
-
-Expected result:
-
-```text
-ok
-```
-
-## When to Use Which Mode
-
-- `stdio`: desktop and IDE MCP clients
-- Streamable HTTP: simple hosted HTTP endpoint
-- Stateful HTTP/SSE: session-based HTTP usage
-
-## Docker Deployment
-
-If you want a simple hosted deployment, use the included compose file:
+## Docker
 
 ```bash
 docker compose up --build -d
 ```
 
-By default it:
+The included Compose configuration enables hosted stateless HTTP on port 3000. `OUTSCRAPER_API_BASE_URL` defaults to `https://api.outscraper.com`; override it with the intended organization's API origin when needed. Use keys belonging to that organization.
 
-- publishes port `3000`
-- enables `CLOUD_SERVICE=true`
-- enables stateless Streamable HTTP
-- listens on `0.0.0.0`
+`/health` returns `ok` when the process is running. It does not prove upstream reachability, key validity or tool-call success.

@@ -1,102 +1,45 @@
 # Contributing
 
-Thanks for contributing to `outscraper-mcp-server`.
+The Node server bridges existing stdio and HTTP connections to the current Outscraper MCP backend. Keep tool definitions and execution behavior in Rashida rather than adding a second local tool catalog.
 
 ## Development Setup
 
-Requirements:
-
-- Node.js 20+
-- npm
-- an Outscraper API key for live endpoint checks
-
-Setup:
+Requires Node.js 20+ and npm:
 
 ```bash
-npm install
-copy .env.example .env
+npm ci
+cp .env.example .env
 ```
 
-Then set `OUTSCRAPER_API_KEY` in `.env`.
-
-## Local Development
-
-Useful commands:
-
-```bash
-npm run build
-npm run check
-npm run dev
-npm start
-```
-
-Default runtime is stdio MCP. HTTP mode is available through env flags documented in [`README.md`](/D:/Work/AI/outscraper-mcp/README.md).
+Use a disposable test account's API key for authorized live checks. Keep keys out of fixtures, logs and commits. The configured API deployment must support `/mcp/<API_KEY>`.
 
 ## Project Structure
 
-- `src/outscraper/` contains the API client and auth helpers
-- `src/services/` contains MCP tool modules
-- `src/transports/` contains stdio and HTTP transport bootstrapping
-- `src/mcp/` contains shared MCP result and execution helpers
+- `src/server.ts` registers forwarding handlers for MCP tool discovery and calls.
+- `src/outscraper/` handles upstream MCP requests and API-key extraction.
+- `src/transports/` implements the Node HTTP connection modes.
+- `src/index.ts` selects stdio or HTTP using `src/config.ts`.
+- `tests/` verifies forwarding, transport behavior and credential handling.
 
-Current service modules include:
+See the [README](./README.md) for connection and configuration details.
 
-- `businesses`
-- `google-maps`
-- `media`
-- `search`
-- `reviews`
-- `validators`
-- `enrichments`
-- `company-insights`
-- `emails-and-contacts`
-- `profile`
-- `requests`
+## Changes to Tools
 
-When adding a new service:
+Add or update services, schemas, descriptions, pricing and organization restrictions in Rashida. Verify the backend contract there, deploy it, and refresh the connected client’s tools. A new upstream tool should not require a Node adapter or a copied schema.
 
-1. Add the endpoint method in `src/outscraper/client.ts`.
-2. Add or extend request types in `src/outscraper/types.ts`.
-3. Create a new module in `src/services/<service-name>/service.ts`.
-4. Register the module in `src/server.ts`.
-5. Update `README.md` so public docs reflect the real user-facing capability.
-6. If the service changes install, metadata, or published behavior, update `server.json` and package metadata as needed.
-
-## Contribution Guidelines
-
-- Keep tool names short and domain-oriented.
-- Prefer direct alignment with the documented Outscraper API surface.
-- Keep output shapes consistent with the shared MCP result envelope.
-- Use `execution_mode` for async-capable tools.
-- Avoid adding unnecessary runtime dependencies.
-- Prefer modular additions over growing a single large file.
-- Keep public documentation product-facing. Avoid referencing internal verification artifacts or local-only workflows in `README.md`.
-- When a service is only available as an enrichment rather than a standalone endpoint, document it that way explicitly.
+Keep the bridge transparent: preserve argument values, tool metadata, result content, pagination and tool errors. Do not add local defaults, synchronous execution modes or a custom result envelope. Preserve existing connection routes and credential isolation. Never retry a paid call automatically after an ambiguous upstream failure.
 
 ## Validation
 
 Before opening a PR:
 
 ```bash
-npm run build
 npm run check
+npm test
+npm run build
 npm pack --dry-run
 ```
 
-If the change touches live endpoint behavior, also run a real MCP smoke test with a valid API key.
+Verify changes through an actual MCP transport, not only by calling a helper. Authentication or deployment changes also need an authorized staging smoke test: compare discovery with the backend and exercise a read-only tool through the intended public proxy. Test paid execution only with explicit authorization and controlled fixtures or an agreed test budget. Do not equate `/health` with upstream readiness.
 
-For new tools, validation should usually include:
-
-1. Confirm the tool appears in `listTools`.
-2. Call the tool through the running MCP server, not only through the raw API client.
-3. Verify at least one realistic sync or async scenario, depending on the endpoint.
-4. Re-check `README.md` so examples, limitations, and tool descriptions still match the implemented behavior.
-
-## Pull Requests
-
-PRs should include:
-
-- what changed
-- why it changed
-- how it was validated
-- any known API limitations or deviations from docs
+PR descriptions should explain the resulting behavior, validation, and any deployment prerequisites. Refresh documentation and examples when the published interface changes; do not publish npm packages or Docker images as part of routine local verification.

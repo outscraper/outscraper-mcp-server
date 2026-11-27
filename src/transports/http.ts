@@ -1,9 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Server as HttpServer } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import type { Express, Request, Response } from "express";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import type { AppConfig } from "../config.js";
 import { extractApiKeyFromHeaders, extractApiKeyFromUrl } from "../outscraper/auth.js";
@@ -34,6 +34,12 @@ function createApp(config: AppConfig): Express {
     res.status(200).send("ok");
   });
 
+  app.all(MCP_PATHS, (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    res.set("Referrer-Policy", "no-referrer");
+    next();
+  });
+
   if (config.httpMode === "stateful") {
     configureStatefulRoutes(app, config);
   } else {
@@ -62,8 +68,8 @@ function configureStatelessRoutes(app: Express, config: AppConfig): void {
     try {
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
-    } catch (error) {
-      console.error("Error handling MCP HTTP request:", error);
+    } catch {
+      console.error("Error handling MCP HTTP request");
 
       if (!res.headersSent) {
         res.status(500).json({
@@ -114,6 +120,9 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
     try {
       if (sessionId && sessions.has(sessionId)) {
         const session = sessions.get(sessionId)!;
+        if (!authorizeSession(session, req, res)) {
+          return;
+        }
         await session.transport.handleRequest(req, res, req.body);
         return;
       }
@@ -125,12 +134,13 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
         }
 
         const server = createServer(config);
+        const apiKeyFingerprint = config.cloudService ? fingerprintApiKey(req) : undefined;
         let transport!: StreamableHTTPServerTransport;
 
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (newSessionId) => {
-            sessions.set(newSessionId, { server, transport });
+            sessions.set(newSessionId, { server, transport, apiKeyFingerprint });
           },
         });
 
@@ -150,8 +160,8 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
       }
 
       sendJsonRpcError(res, 400, "Bad Request: No valid session ID provided");
-    } catch (error) {
-      console.error("Error handling stateful MCP HTTP request:", error);
+    } catch {
+      console.error("Error handling stateful MCP HTTP request");
 
       if (!res.headersSent) {
         sendJsonRpcError(res, 500, "Internal server error", -32603);
@@ -171,10 +181,15 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
       return;
     }
 
+    const session = sessions.get(sessionId)!;
+    if (!authorizeSession(session, req, res)) {
+      return;
+    }
+
     try {
-      await sessions.get(sessionId)!.transport.handleRequest(req, res);
-    } catch (error) {
-      console.error("Error handling stateful MCP GET request:", error);
+      await session.transport.handleRequest(req, res);
+    } catch {
+      console.error("Error handling stateful MCP GET request");
 
       if (!res.headersSent) {
         sendJsonRpcError(res, 500, "Internal server error", -32603);
@@ -194,10 +209,15 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
       return;
     }
 
+    const session = sessions.get(sessionId)!;
+    if (!authorizeSession(session, req, res)) {
+      return;
+    }
+
     try {
-      await sessions.get(sessionId)!.transport.handleRequest(req, res);
-    } catch (error) {
-      console.error("Error handling stateful MCP DELETE request:", error);
+      await session.transport.handleRequest(req, res);
+    } catch {
+      console.error("Error handling stateful MCP DELETE request");
 
       if (!res.headersSent) {
         sendJsonRpcError(res, 500, "Internal server error", -32603);
@@ -207,8 +227,22 @@ function configureStatefulRoutes(app: Express, config: AppConfig): void {
 }
 
 interface StatefulSession {
-  server: McpServer;
+  server: Server;
   transport: StreamableHTTPServerTransport;
+  apiKeyFingerprint?: Buffer;
+}
+
+function fingerprintApiKey(req: Request): Buffer {
+  const apiKey = extractApiKeyFromHeaders(req.headers) ?? extractApiKeyFromExpressPath(req);
+  return createHash("sha256").update(apiKey ?? "").digest();
+}
+
+function authorizeSession(session: StatefulSession, req: Request, res: Response): boolean {
+  if (session.apiKeyFingerprint && !timingSafeEqual(session.apiKeyFingerprint, fingerprintApiKey(req))) {
+    sendJsonRpcError(res, 403, "Forbidden: session belongs to another API key");
+    return false;
+  }
+  return true;
 }
 
 function authenticateRequest(

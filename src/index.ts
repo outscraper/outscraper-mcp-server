@@ -3,7 +3,6 @@
 import dotenv from "dotenv";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { getConfig } from "./config.js";
-import { OutscraperApiError } from "./outscraper/client.js";
 import { createServer } from "./server.js";
 import { startHttpServer } from "./transports/http.js";
 
@@ -22,16 +21,8 @@ async function main(): Promise<void> {
   console.error(`${config.serverName} running on stdio`);
 }
 
-main().catch((error: unknown) => {
-  if (error instanceof OutscraperApiError) {
-    console.error(
-      `Outscraper API error (${error.status}): ${error.message}\n${JSON.stringify(error.payload, null, 2)}`,
-    );
-  } else if (error instanceof Error) {
-    console.error(error.message);
-  } else {
-    console.error("Unknown startup error", error);
-  }
-
+main().catch(() => {
+  // Startup exceptions may contain a configured URL or credentials.
+  console.error("Unable to start Outscraper MCP. Check the transport and bind settings.");
   process.exit(1);
 });

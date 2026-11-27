@@ -1,27 +1,14 @@
 # Contact Discovery
 
-## Use Case
+Prompt: "Find company contact details for these domains, prioritizing technical and decision-maker contacts. Explain pricing before starting."
 
-Find emails, phones, and likely decision-makers for companies you already know by domain.
-
-## Natural-Language Prompt
-
-Find contact details and likely decision-makers for these company websites. Prioritize technical and decision-maker contacts.
-
-## Recommended Tool
-
-- `emails_and_contacts`
-
-## Example Arguments
+Follow the [paid-service workflow](./README.md#before-paid-work). Inspect `emails_and_contacts`, including its billing unit; do not assume each input domain incurs exactly one contact unit. If advertised directly, call:
 
 ```json
 {
   "query": ["outscraper.com", "vercel.com"],
-  "preferred_contacts": ["technical", "decision makers"],
-  "execution_mode": "async"
+  "preferred_contacts": ["technical", "decision makers"]
 }
 ```
 
-## Good Pairing
-
-- run `company_insights` first if you need company-level firmographics before contact discovery
+Read results with `requests_get` using the returned `id`. Distinguish company contacts from named people, and do not infer email deliverability from availability. If verification is requested, discover the email-validation service and price that separate step before execution.
