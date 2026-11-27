@@ -1,0 +1,15 @@
+{
+  "name": "outscraper",
+  "version": "0.3.0",
+  "description": "Outscraper business data, Google Maps scraping, contact discovery, enrichment, pricing, and request results through the official MCP bridge.",
+  "author": {
+    "name": "Outscraper",
+    "email": "support@outscraper.com",
+    "url": "https://outscraper.com"
+  },
+  "homepage": "https://mcp.outscraper.com",
+  "repository": "https://github.com/outscraper/outscraper-mcp-server",
+  "license": "MIT",
+  "keywords": ["outscraper", "outscraper mcp"],
+  "mcpServers": "./.mcp.json"
+}
