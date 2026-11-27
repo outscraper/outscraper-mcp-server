@@ -43,6 +43,26 @@ The process uses stdio by default. It sends tool requests to the API-key endpoin
 
 The Node HTTP server's header authentication described below is separate from the hosted OAuth endpoint.
 
+### Gemini CLI Extension
+
+Install the official extension with [Gemini CLI](https://geminicli.com/), Node.js 20 or newer, and npm available on your `PATH`:
+
+```bash
+gemini extensions install https://github.com/outscraper/outscraper-mcp-server
+```
+
+When prompted, enter your [Outscraper API key](https://app.outscraper.com/api-key) in the extension's private setting. Gemini treats this setting as sensitive and stores it in the system keychain. Never paste the key into chat or commit it to a file.
+
+Restart Gemini CLI after installation and use `/mcp` to inspect the available tools. This extension runs `outscraper-mcp@0.3.0` locally over stdio and connects to Outscraper with your API key. It does not require an OAuth callback or a local build of this repository.
+
+To change the stored key later:
+
+```bash
+gemini extensions config outscraper "Outscraper API Key"
+```
+
+Installing the extension does not authorize paid data requests. Start catalog discovery with a free masked preview, inspect the current service schema, and check `pricing_get` before running paid work within an agreed scope and budget. See [Tools and Workflows](#tools-and-workflows) below.
+
 ### Upgrading From 0.2.x
 
 Version 0.3.0 uses Rashida's tool definitions and results. Refresh your client's tool list and update saved workflows: catalog discovery uses `search_businesses`, full catalog retrieval uses `search_businesses_full`, and result retrieval uses `requests_get` with `id`. The previous `businesses_search` / `businesses_get` contract and Node-specific result envelope are not preserved. Review the [changelog](./CHANGELOG.md) before upgrading fixed integrations.
