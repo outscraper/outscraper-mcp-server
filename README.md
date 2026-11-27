@@ -1,12 +1,23 @@
 # Outscraper MCP — Node Bridge
 
->Most users can connect directly through our hosted MCP [mcp.outscraper.com](mcp.outscraper.com). This package provides a Node bridge for clients that require a local MCP process.
+> Most users can connect directly through our hosted MCP at [mcp.outscraper.com](https://mcp.outscraper.com/). This package provides a Node bridge for clients that require a local MCP process.
 
 Official Node MCP bridge for [Outscraper](https://outscraper.com/).
 
 Use the same business catalog, scraping, enrichment, pricing, and request tools as the main Outscraper MCP server through an existing stdio or Node HTTP connection. Tool names, descriptions, parameters, annotations, and results come directly from Rashida, the Outscraper API backend. This package does not maintain a separate service catalog or transform tool results into a Node-specific envelope.
 
-## Quick Start
+## Connect to the Hosted MCP
+
+The hosted Outscraper MCP is the recommended starting point for clients that support remote HTTP. No Node.js installation is needed for a direct hosted connection.
+
+| Connection | MCP server URL | Authentication |
+| --- | --- | --- |
+| OAuth | `https://api.outscraper.com/mcp` | Choose OAuth and sign in to Outscraper |
+| API key | `https://api.outscraper.com/mcp/<API_KEY>` | Replace `<API_KEY>` with your Outscraper API key and choose no additional authentication |
+
+Use these API URLs in your client's MCP settings; the setup website is a guide. The plain `/mcp` endpoint uses OAuth, so a normal API key is not an OAuth bearer token. Keep the complete API-key URL private. See the [client setup guides](https://mcp.outscraper.com/#setup) for compatibility and connection instructions.
+
+## Node Bridge Quick Start
 
 Requires Node.js 20 or newer and an Outscraper account API key. Keep the key in your client's private configuration or secret storage.
 
@@ -28,12 +39,11 @@ For a client that launches local MCP processes:
 
 The process uses stdio by default. It sends tool requests to the API-key endpoint at `https://api.outscraper.com/mcp/<API_KEY>`. Do not put a real key in shared examples, screenshots, or support messages.
 
-If your client supports remote HTTP directly, the Node bridge is optional:
+The Node HTTP server's header authentication described below is separate from the hosted OAuth endpoint.
 
-- OAuth connection: `https://api.outscraper.com/mcp`
-- API-key connection: `https://api.outscraper.com/mcp/<API_KEY>`
+### Upgrading From 0.2.x
 
-The plain `/mcp` API endpoint uses OAuth; a normal API key is not an OAuth bearer token. The Node HTTP server's header authentication described below is separate. The [MCP setup website](https://mcp.outscraper.com/) provides client setup guidance.
+Version 0.3.0 uses Rashida's tool definitions and results. Refresh your client's tool list and update saved workflows: catalog discovery uses `search_businesses`, full catalog retrieval uses `search_businesses_full`, and result retrieval uses `requests_get` with `id`. The previous `businesses_search` / `businesses_get` contract and Node-specific result envelope are not preserved. Review the [changelog](./CHANGELOG.md) before upgrading fixed integrations.
 
 ## How It Works
 

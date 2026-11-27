@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (Unreleased)
+
+### Upgrade Notes
+
+- This minor release changes the pre-1.0 tool contract. Refresh client tools and
+  update workflows that use the 0.2.x tool names or Node-specific result envelope.
+- Start new remote connections at https://mcp.outscraper.com/. The Node package
+  remains available for clients requiring a local process or a Node HTTP bridge.
 
 ### Changed
 
@@ -16,6 +23,10 @@
   and bounded result polling.
 - Point the registry's remote entry to the canonical OAuth MCP endpoint; local
   Node connections continue to use API keys.
+- Set the package homepage and registry website to the MCP setup website, and
+  describe the hosted service and optional Node bridge consistently.
+- Align package, lockfile and registry versions at 0.3.0. Registry publication
+  remains a separate step after the npm release succeeds.
 
 ### Fixed
 

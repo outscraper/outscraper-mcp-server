@@ -1,8 +1,8 @@
 {
   "name": "outscraper-mcp",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "mcpName": "io.github.outscraper/outscraper-mcp-server",
-  "description": "Official Outscraper MCP server for business discovery, Google Maps intelligence, company enrichment, reviews, contact data, and structured web extraction.",
+  "description": "Official Node bridge for Outscraper's hosted MCP: business data, scraping, enrichment, pricing, and request results.",
   "type": "module",
   "bin": {
     "outscraper-mcp": "dist/index.js"
@@ -36,7 +36,7 @@
     "reviews",
     "web-scraping"
   ],
-  "homepage": "https://github.com/outscraper/outscraper-mcp-server#readme",
+  "homepage": "https://mcp.outscraper.com/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/outscraper/outscraper-mcp-server.git"
