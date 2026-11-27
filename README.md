@@ -1,5 +1,7 @@
 # Outscraper MCP — Node Bridge
 
+[![Outscraper MCP server](https://glama.ai/mcp/servers/outscraper/outscraper-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/outscraper/outscraper-mcp-server)
+
 > Most users can connect directly through our hosted MCP at [mcp.outscraper.com](https://mcp.outscraper.com/). This package provides a Node bridge for clients that require a local MCP process.
 
 Official Node MCP bridge for [Outscraper](https://outscraper.com/).
