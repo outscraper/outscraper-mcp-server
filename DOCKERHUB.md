@@ -13,7 +13,6 @@ Use this image to expose Outscraper as a hosted MCP endpoint for:
 ## Why Use This Image
 
 This image is useful when you want to:
-
 - run Outscraper as a remote MCP server behind your own domain
 - connect hosted MCP clients over HTTP
 - use URL-based auth for connector-style workflows
