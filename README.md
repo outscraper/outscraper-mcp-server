@@ -1,4 +1,6 @@
-# Outscraper MCP
+# Outscraper MCP — Node Bridge
+
+>Most users can connect directly through our hosted MCP [mcp.outscraper.com](mcp.outscraper.com). This package provides a Node bridge for clients that require a local MCP process.
 
 Official Node MCP bridge for [Outscraper](https://outscraper.com/).
 
